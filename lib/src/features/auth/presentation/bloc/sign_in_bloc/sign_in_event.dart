@@ -7,23 +7,79 @@ sealed class SignInEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class CallSignInEvent extends SignInEvent {
-  const CallSignInEvent();
+class SignInRequestedEvent extends SignInEvent {
+  final String email;
+  final String password;
+  final bool agreeTerms;
+
+  const SignInRequestedEvent({
+    required this.email,
+    required this.password,
+    required this.agreeTerms,
+  });
+
+  @override
+  List<Object> get props => [email, password, agreeTerms];
+}
+
+class SignInPasswordVisibilityToggledEvent extends SignInEvent {
+  const SignInPasswordVisibilityToggledEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class AgreeTermsConditionEvent extends SignInEvent {
-  final bool isAgree;
-  const AgreeTermsConditionEvent({required this.isAgree});
+class SignInResetEvent extends SignInEvent {
+  const SignInResetEvent();
 
   @override
-  List<Object> get props => [isAgree];
+  List<Object> get props => [];
 }
 
-class ShowHidePasswordEvent extends SignInEvent {
-  const ShowHidePasswordEvent();
+class SignInFormValidatedEvent extends SignInEvent {
+  final String email;
+  final String password;
+  final bool agreeTerms;
+
+  const SignInFormValidatedEvent({
+    required this.email,
+    required this.password,
+    required this.agreeTerms,
+  });
+
+  @override
+  List<Object> get props => [email, password, agreeTerms];
+}
+
+class SignInLoadingStateChangedEvent extends SignInEvent {
+  final bool isLoading;
+
+  const SignInLoadingStateChangedEvent(this.isLoading);
+
+  @override
+  List<Object> get props => [isLoading];
+}
+
+class SignInEmailChangedEvent extends SignInEvent {
+  final String email;
+
+  const SignInEmailChangedEvent(this.email);
+
+  @override
+  List<Object> get props => [email];
+}
+
+class SignInPasswordChangedEvent extends SignInEvent {
+  final String password;
+
+  const SignInPasswordChangedEvent(this.password);
+
+  @override
+  List<Object> get props => [password];
+}
+
+class SignInInitializeAnimationsEvent extends SignInEvent {
+  const SignInInitializeAnimationsEvent();
 
   @override
   List<Object> get props => [];

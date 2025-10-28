@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:task_management/src/core/constants/app_strings.dart';
 import 'package:task_management/src/core/handler/firebase_auth_error_handler.dart';
 import 'package:task_management/src/core/mixins/firebase_cloud_collection_key.dart';
 
@@ -36,12 +37,13 @@ class AuthDataSources with FirebaseCloudCollectionKeys {
       final usernameQuery = await firestore
           .collection(users)
           .where('username', isEqualTo: username)
+          .limit(1) // Limit to 1 for better performance
           .get();
 
       if (usernameQuery.docs.isNotEmpty) {
         throw FirebaseAuthException(
           code: 'username-already-in-use',
-          message: 'This username is already taken. Please choose another one.',
+          message: AppStrings.usernameAlreadyInUse,
         );
       }
 
@@ -66,6 +68,13 @@ class AuthDataSources with FirebaseCloudCollectionKeys {
         message: FirebaseAuthErrorHandler.getMessage(e),
       );
     } catch (e) {
+      // Handle Firestore permission errors specifically
+      if (e.toString().contains('PERMISSION_DENIED')) {
+        throw FirebaseAuthException(
+          code: 'permission-denied',
+          message: AppStrings.databaseAccessDenied,
+        );
+      }
       throw Exception(e.toString());
     }
   }

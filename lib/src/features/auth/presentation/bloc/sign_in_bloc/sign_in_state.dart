@@ -7,19 +7,71 @@ sealed class SignInState extends Equatable {
   List<Object> get props => [];
 }
 
-final class SignInInitial extends SignInState {}
+class SignInInitial extends SignInState {
+  final String email;
+  final String password;
+  final bool isPasswordVisible;
+  final bool isLoading;
+  final bool animationsInitialized;
 
-class AgreeTermsConditionState extends SignInState {
-  final bool status;
+  const SignInInitial({
+    this.email = '',
+    this.password = '',
+    this.isPasswordVisible = false,
+    this.isLoading = false,
+    this.animationsInitialized = false,
+  });
 
-  const AgreeTermsConditionState({required this.status});
   @override
-  List<Object> get props => [status];
+  List<Object> get props => [
+        email,
+        password,
+        isPasswordVisible,
+        isLoading,
+        animationsInitialized,
+      ];
+
+  SignInInitial copyWith({
+    String? email,
+    String? password,
+    bool? isPasswordVisible,
+    bool? isLoading,
+    bool? animationsInitialized,
+  }) {
+    return SignInInitial(
+      email: email ?? this.email,
+      password: password ?? this.password,
+      isPasswordVisible: isPasswordVisible ?? this.isPasswordVisible,
+      isLoading: isLoading ?? this.isLoading,
+      animationsInitialized:
+          animationsInitialized ?? this.animationsInitialized,
+    );
+  }
 }
 
-class SignInLoadingState extends SignInState {}
+class SignInLoadingState extends SignInState {
+  final String email;
+  final String password;
+  final bool isPasswordVisible;
+  final bool animationsInitialized;
 
-final class SignInSuccessState extends SignInState {
+  const SignInLoadingState({
+    this.email = '',
+    this.password = '',
+    this.isPasswordVisible = false,
+    this.animationsInitialized = false,
+  });
+
+  @override
+  List<Object> get props => [
+        email,
+        password,
+        isPasswordVisible,
+        animationsInitialized,
+      ];
+}
+
+class SignInSuccessState extends SignInState {
   final String successMessage;
 
   const SignInSuccessState({required this.successMessage});
@@ -27,7 +79,7 @@ final class SignInSuccessState extends SignInState {
   List<Object> get props => [successMessage];
 }
 
-final class SignInFailedState extends SignInState {
+class SignInFailedState extends SignInState {
   final String errorMessage;
 
   const SignInFailedState({required this.errorMessage});
@@ -35,10 +87,20 @@ final class SignInFailedState extends SignInState {
   List<Object> get props => [errorMessage];
 }
 
-class ShowHidePasswordState extends SignInState {
-  final bool status;
+class SignInPasswordVisibilityState extends SignInState {
+  final bool isPasswordVisible;
 
-  const ShowHidePasswordState({required this.status});
+  const SignInPasswordVisibilityState({required this.isPasswordVisible});
   @override
-  List<Object> get props => [status];
+  List<Object> get props => [isPasswordVisible];
 }
+
+class SignInValidationErrorState extends SignInState {
+  final Map<String, String> fieldErrors;
+
+  const SignInValidationErrorState({required this.fieldErrors});
+  @override
+  List<Object> get props => [fieldErrors];
+}
+
+class SignInFormValidState extends SignInState {}

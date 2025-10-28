@@ -7,6 +7,6 @@ import 'package:task_management/src/core/services/local_storage_service/hive_sto
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await HiveStorageService().init();
+  await HiveStorageService.instance.init();
   runApp(const MyApp());
 }

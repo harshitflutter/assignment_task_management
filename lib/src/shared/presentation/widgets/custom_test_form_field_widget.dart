@@ -120,115 +120,126 @@ class CustomTestFormFieldWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      minLines: minLines,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      keyboardAppearance: Brightness.light,
-      scrollController: scrollController,
-      controller: textEditingController,
-      cursorColor: cursoreColor,
-      keyboardType: textInputType,
-      maxLines: maxLines,
-      inputFormatters: inputFormatters,
-      textAlign: textAlign ?? TextAlign.start,
-      style: textStyle ?? AppTextStyles.fieldTextStyle,
-      cursorHeight: cursorHeight ?? 15.h,
-      cursorWidth: cursorWidth ?? 2.0,
-      onSaved: (newValue) {},
-      onTap: onTap,
-      focusNode: focusNode,
-      initialValue: initialValue,
-      autofocus: autoFocus ?? false,
-      maxLength: maxLength,
-      readOnly: readOnly,
-      validator: validator,
-      obscureText: obscureText ?? false,
-      textCapitalization: textCapitalization ?? TextCapitalization.none,
-      onTapOutside:
-          onTapOutside ??
-          (event) {
-            FocusScope.of(context).unfocus();
-          },
-      onFieldSubmitted: onFieldSubmitted,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        floatingLabelStyle: floatingLabelStyle,
-        labelText: labelText,
-        label: lableWidget,
-        labelStyle: labelStyle,
-        errorText: null,
-        errorStyle: errorStyle,
-        isDense: true,
-        suffixText: suffixText,
-        focusedErrorBorder:
-            focusedErrorBorder ??
-            OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14.r),
-              borderSide: BorderSide(
-                color: AppColors.grey.withValues(alpha: 0.2),
-                width: 1,
-              ),
-            ),
-        errorBorder:
-            errorBorder ??
-            OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14.r),
-              borderSide: BorderSide(
-                color: AppColors.grey.withValues(alpha: 0.2),
-                width: 1,
-              ),
-            ),
-        border: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: AppColors.grey.withValues(alpha: 0.2),
-            width: 1,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.fieldShadow,
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
-        ),
-        disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14.r),
-          borderSide: BorderSide(
-            color: AppColors.grey.withValues(alpha: 0.2),
-            width: 1,
+        ],
+      ),
+      child: TextFormField(
+        minLines: minLines,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        keyboardAppearance: Brightness.light,
+        scrollController: scrollController,
+        controller: textEditingController,
+        cursorColor: cursoreColor,
+        keyboardType: textInputType,
+        maxLines: maxLines,
+        inputFormatters: inputFormatters,
+        textAlign: textAlign ?? TextAlign.start,
+        style: textStyle ?? AppTextStyles.fieldTextStyle,
+        cursorHeight: cursorHeight ?? 20.h,
+        cursorWidth: cursorWidth ?? 2.0,
+        onSaved: (newValue) {},
+        onTap: onTap,
+        focusNode: focusNode,
+        initialValue: initialValue,
+        autofocus: autoFocus ?? false,
+        maxLength: maxLength,
+        readOnly: readOnly,
+        validator: validator,
+        obscureText: obscureText ?? false,
+        textCapitalization: textCapitalization ?? TextCapitalization.none,
+        onTapOutside: onTapOutside ??
+            (event) {
+              FocusScope.of(context).unfocus();
+            },
+        onFieldSubmitted: onFieldSubmitted,
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          floatingLabelStyle: floatingLabelStyle,
+          labelText: labelText,
+          label: lableWidget,
+          labelStyle: labelStyle,
+          errorText: null,
+          errorStyle: errorStyle,
+          isDense: true,
+          suffixText: suffixText,
+          focusedErrorBorder: focusedErrorBorder ??
+              OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16.r),
+                borderSide: BorderSide(
+                  color: AppColors.red.withOpacity(0.8),
+                  width: 2,
+                ),
+              ),
+          errorBorder: errorBorder ??
+              OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16.r),
+                borderSide: BorderSide(
+                  color: AppColors.red.withOpacity(0.6),
+                  width: 1.5,
+                ),
+              ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16.r),
+            borderSide: BorderSide(
+              color: AppColors.grey.withOpacity(0.2),
+              width: 1,
+            ),
           ),
-        ),
-        enabledBorder:
-            enableBorder ??
-            OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14.r),
-              borderSide: BorderSide(
-                color: AppColors.grey.withValues(alpha: 0.2),
-                width: 1,
-              ),
+          disabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16.r),
+            borderSide: BorderSide(
+              color: AppColors.grey.withOpacity(0.3),
+              width: 1,
             ),
-        focusedBorder:
-            focusedBorder ??
-            OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14.r),
-              borderSide: BorderSide(
-                color: AppColors.grey.withValues(alpha: 0.2),
-                width: 1,
+          ),
+          enabledBorder: enableBorder ??
+              OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16.r),
+                borderSide: BorderSide(
+                  color: AppColors.grey.withOpacity(0.2),
+                  width: 1,
+                ),
               ),
-            ),
-        suffixStyle: suffixTextStyle,
-        suffixIcon: suffixIcon,
-        suffix: suffix,
-        hintText: hintText,
-        counter: counterWidget,
-        prefixText: prefixText,
-        prefix: prefix,
-        alignLabelWithHint: alignLabelWithHint,
-        prefixIconConstraints: const BoxConstraints(),
-        prefixStyle: prefixTextStyle,
-        suffixIconConstraints: const BoxConstraints(),
-        hintStyle: textHintStyle ?? AppTextStyles.hint400Size10,
-        prefixIcon: prefixIcon,
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: paddingHorizonatal ?? 20.w,
-          vertical: paddingVertical ?? 15.h,
+          focusedBorder: focusedBorder ??
+              OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16.r),
+                borderSide: const BorderSide(
+                  color: AppColors.signInGradient1,
+                  width: 2,
+                ),
+              ),
+          suffixStyle: suffixTextStyle,
+          suffixIcon: suffixIcon,
+          suffix: suffix,
+          hintText: hintText,
+          counter: counterWidget,
+          prefixText: prefixText,
+          prefix: prefix,
+          alignLabelWithHint: alignLabelWithHint,
+          prefixIconConstraints: BoxConstraints(
+            minWidth: 48.w,
+            minHeight: 20.h,
+          ),
+          prefixStyle: prefixTextStyle,
+          suffixIconConstraints: const BoxConstraints(),
+          hintStyle: textHintStyle ?? AppTextStyles.hint400Size10,
+          prefixIcon: prefixIcon,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: paddingHorizonatal ?? 20.w,
+            vertical: paddingVertical ?? 18.h,
+          ),
+          filled: filled ?? true,
+          counterStyle: counterTextStyle,
+          fillColor: fillColor ?? AppColors.white,
         ),
-        filled: filled ?? true,
-        counterStyle: counterTextStyle,
-        fillColor: fillColor ?? AppColors.white,
       ),
     );
   }

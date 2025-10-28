@@ -18,11 +18,20 @@ class ConnectivityListenerWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<InternetCubit, InternetConnectionStatus?>(
       listener: (context, status) {
+        // Ensure we have a valid Navigator context
+        if (!context.mounted) return;
+
         if (status == InternetConnectionStatus.disconnected) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const NoInternetScreen()),
-          );
+          // Use post-frame callback to ensure navigation happens after build
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const NoInternetScreen()),
+              );
+            }
+          });
         } else if (status == InternetConnectionStatus.connected) {
           //TODO: Add splash screen
           // Navigator.push(
