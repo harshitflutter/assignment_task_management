@@ -1,93 +1,13 @@
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:task_management/src/core/constants/app_strings.dart';
 import 'package:task_management/src/features/tasks/domain/entities/task_entity.dart';
 import 'package:task_management/src/features/tasks/presentation/cubit/form_cubit.dart';
 import 'package:task_management/src/features/tasks/presentation/cubit/task_cubit.dart';
 import 'package:uuid/uuid.dart';
 
-// Events
-abstract class AddTaskEvent extends Equatable {
-  const AddTaskEvent();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class ValidateForm extends AddTaskEvent {
-  final FormInitial formState;
-  const ValidateForm(this.formState);
-
-  @override
-  List<Object?> get props => [formState];
-}
-
-class CreateTaskFromForm extends AddTaskEvent {
-  final FormInitial formState;
-  const CreateTaskFromForm(this.formState);
-
-  @override
-  List<Object?> get props => [formState];
-}
-
-class ResetAddTaskState extends AddTaskEvent {
-  const ResetAddTaskState();
-}
-
-// States
-abstract class AddTaskState extends Equatable {
-  const AddTaskState();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class AddTaskInitial extends AddTaskState {}
-
-class AddTaskValidating extends AddTaskState {}
-
-class AddTaskLoading extends AddTaskState {}
-
-class AddTaskValid extends AddTaskState {
-  final FormInitial formState;
-  const AddTaskValid(this.formState);
-
-  @override
-  List<Object?> get props => [formState];
-}
-
-class AddTaskInvalid extends AddTaskState {
-  final FormInitial formState;
-  final List<String> validationErrors;
-  const AddTaskInvalid(this.formState, this.validationErrors);
-
-  @override
-  List<Object?> get props => [formState, validationErrors];
-}
-
-class AddTaskCreating extends AddTaskState {
-  final FormInitial formState;
-  const AddTaskCreating(this.formState);
-
-  @override
-  List<Object?> get props => [formState];
-}
-
-class AddTaskCreated extends AddTaskState {
-  final TaskEntity task;
-  const AddTaskCreated(this.task);
-
-  @override
-  List<Object?> get props => [task];
-}
-
-class AddTaskError extends AddTaskState {
-  final String message;
-  const AddTaskError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
+part 'add_task_state.dart';
 
 // Cubit
 class AddTaskCubit extends Cubit<AddTaskState> {
@@ -136,7 +56,7 @@ class AddTaskCubit extends Cubit<AddTaskState> {
       // Get current user
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        emit(const AddTaskError('User not authenticated'));
+        emit(const AddTaskError(AppStrings.noUserFound));
         return;
       }
 
@@ -160,7 +80,7 @@ class AddTaskCubit extends Cubit<AddTaskState> {
       // Emit success state
       emit(AddTaskCreated(task));
     } catch (e) {
-      emit(AddTaskError('Failed to create task: $e'));
+      emit(const AddTaskError(AppStrings.failedToCreateTask));
     }
   }
 
@@ -175,22 +95,22 @@ class AddTaskCubit extends Cubit<AddTaskState> {
 
     // Validate title
     if (formState.title.trim().isEmpty) {
-      errors.add('Title is required');
+      errors.add(AppStrings.titleIsRequired);
     } else if (formState.title.trim().length < 3) {
-      errors.add('Title must be at least 3 characters long');
+      errors.add(AppStrings.titleMustBeAtLeast3CharactersLong);
     } else if (formState.title.trim().length > 100) {
-      errors.add('Title must be less than 100 characters');
+      errors.add(AppStrings.titleMustBeLessThan100Characters);
     }
 
     // Validate description (optional but if provided, should have reasonable length)
     if (formState.description.trim().isNotEmpty &&
         formState.description.trim().length > 500) {
-      errors.add('Description must be less than 500 characters');
+      errors.add(AppStrings.descriptionMustBeLessThan500Characters);
     }
 
     // Validate due date
     if (formState.selectedDate == null) {
-      errors.add('Due date is required');
+      errors.add(AppStrings.dueDateIsRequired);
     } else {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
@@ -201,13 +121,13 @@ class AddTaskCubit extends Cubit<AddTaskState> {
       );
 
       if (selectedDate.isBefore(today)) {
-        errors.add('Due date cannot be in the past');
+        errors.add(AppStrings.dueDateCannotBeInThePast);
       }
 
       // Check if due date is too far in the future (optional validation)
       final maxDate = today.add(const Duration(days: 365));
       if (selectedDate.isAfter(maxDate)) {
-        errors.add('Due date cannot be more than 1 year in the future');
+        errors.add(AppStrings.dueDateCannotBeMoreThan1YearInTheFuture);
       }
     }
 
@@ -227,18 +147,18 @@ class AddTaskCubit extends Cubit<AddTaskState> {
   /// Formats the date for display
   String formatDate(DateTime date) {
     const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
+      AppStrings.january,   
+      AppStrings.february,
+      AppStrings.march,
+      AppStrings.april,
+      AppStrings.may,
+      AppStrings.june,
+      AppStrings.july,
+      AppStrings.august,
+      AppStrings.september,
+      AppStrings.october,
+      AppStrings.november,
+      AppStrings.december
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
@@ -256,9 +176,9 @@ class AddTaskCubit extends Cubit<AddTaskState> {
     }
 
     if (errors.length == 2) {
-      return '${errors.first} and ${errors.last}';
+      return '${errors.first} ${AppStrings.and} ${errors.last}';
     }
 
-    return '${errors.take(errors.length - 1).join(', ')}, and ${errors.last}';
+    return '${errors.take(errors.length - 1).join(', ')}, ${AppStrings.and} ${errors.last}';
   }
 }

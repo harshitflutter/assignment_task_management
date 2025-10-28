@@ -1,20 +1,22 @@
 import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:task_management/src/core/constants/app_colors.dart';
+import 'package:task_management/src/core/constants/app_strings.dart';
 import 'package:task_management/src/core/constants/app_text_styles.dart';
 import 'package:task_management/src/core/routes/app_routes.dart';
+import 'package:task_management/src/core/utils/file_type_utils.dart';
 import 'package:task_management/src/features/tasks/domain/entities/task_entity.dart';
 import 'package:task_management/src/features/tasks/presentation/cubit/task_cubit.dart';
+import 'package:task_management/src/features/tasks/presentation/widgets/offline_tag.dart';
 import 'package:task_management/src/features/tasks/presentation/widgets/sync_status_indicator.dart';
 import 'package:task_management/src/shared/presentation/widgets/image_viewer.dart';
-import 'package:task_management/src/core/utils/file_type_utils.dart';
-import 'package:task_management/src/features/tasks/presentation/widgets/offline_tag.dart';
 
 class TaskDetailPage extends StatelessWidget {
   final String taskId;
@@ -547,7 +549,7 @@ class TaskDetailPage extends StatelessWidget {
                     ),
                     SizedBox(width: 8.w),
                     Text(
-                      'Delete',
+                      AppStrings.delete,
                       style: AppTextStyles.buttonTextStyleSecondary.copyWith(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -575,7 +577,7 @@ class TaskDetailPage extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            'Loading task details...',
+            AppStrings.loadingTaskDetails,
             style: AppTextStyles.primary400Size16.copyWith(
               color: AppColors.grey,
             ),
@@ -605,7 +607,7 @@ class TaskDetailPage extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            'The task you\'re looking for doesn\'t exist',
+            AppStrings.theTaskYouAreLookingForDoesNotExist,
             style: AppTextStyles.primary400Size16.copyWith(
               color: AppColors.grey,
             ),
@@ -652,11 +654,11 @@ class TaskDetailPage extends StatelessWidget {
     final taskDate = DateTime(date.year, date.month, date.day);
 
     if (taskDate == today) {
-      return 'Today';
+      return AppStrings.today;
     } else if (taskDate == today.add(const Duration(days: 1))) {
-      return 'Tomorrow';
+      return AppStrings.tomorrow;
     } else if (taskDate == today.subtract(const Duration(days: 1))) {
-      return 'Yesterday';
+      return AppStrings.yesterday;
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }
@@ -667,8 +669,14 @@ class TaskDetailPage extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Task'),
-          content: Text('Are you sure you want to delete "${task.title}"?'),
+          title: Text(
+            AppStrings.deleteTask,
+            style: AppTextStyles.primary600Size18,
+          ),
+          content: Text(
+            '${AppStrings.areYouSureDeleteTask} "${task.title}"? ${AppStrings.actionCannotBeUndone}.',
+            style: AppTextStyles.primary400Size16,
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),

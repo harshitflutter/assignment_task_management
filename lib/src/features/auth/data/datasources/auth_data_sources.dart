@@ -52,6 +52,8 @@ class AuthDataSources with FirebaseCloudCollectionKeys {
         password: password,
       );
 
+      await result.user?.sendEmailVerification();
+
       final user = result.user!;
       await firestore.collection(users).doc(user.uid).set({
         'uid': user.uid,

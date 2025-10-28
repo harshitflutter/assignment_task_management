@@ -76,6 +76,8 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
         username: event.username,
       );
 
+      
+
       if (user != null) {
         emit(const SignUpSuccessState(
             successMessage: AppStrings.accountCreatedSuccessfully));

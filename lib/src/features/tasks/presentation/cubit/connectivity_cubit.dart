@@ -2,33 +2,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-// States
-abstract class ConnectivityState extends Equatable {
-  const ConnectivityState();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class ConnectivityInitial extends ConnectivityState {}
-
-class ConnectivityOnline extends ConnectivityState {
-  final DateTime lastConnectedAt;
-
-  const ConnectivityOnline({required this.lastConnectedAt});
-
-  @override
-  List<Object?> get props => [lastConnectedAt];
-}
-
-class ConnectivityOffline extends ConnectivityState {
-  final DateTime lastDisconnectedAt;
-
-  const ConnectivityOffline({required this.lastDisconnectedAt});
-
-  @override
-  List<Object?> get props => [lastDisconnectedAt];
-}
+part 'connectivity_state.dart';
 
 // Cubit
 class ConnectivityCubit extends Cubit<ConnectivityState> {

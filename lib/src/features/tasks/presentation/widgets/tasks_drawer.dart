@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:task_management/src/core/constants/app_colors.dart';
+import 'package:task_management/src/core/constants/app_strings.dart';
 import 'package:task_management/src/core/constants/app_text_styles.dart';
 import 'package:task_management/src/core/routes/app_routes.dart';
 import 'package:task_management/src/features/tasks/presentation/cubit/user_profile_cubit.dart';
@@ -20,11 +21,11 @@ class TasksDrawer extends StatelessWidget {
               if (state is UserProfileLoaded) {
                 return UserAccountsDrawerHeader(
                   accountName: Text(
-                    state.user.displayName ?? 'User',
+                    state.user.displayName ?? AppStrings.user,
                     style: AppTextStyles.drawerHeaderTextStyle,
                   ),
                   accountEmail: Text(
-                    state.user.email ?? 'No email',
+                    state.user.email ?? AppStrings.noEmail,
                     style: AppTextStyles.drawerSubtitleTextStyle,
                   ),
                   currentAccountPicture: CircleAvatar(
@@ -56,14 +57,14 @@ class TasksDrawer extends StatelessWidget {
                 );
               } else if (state is UserProfileLoading) {
                 return const UserAccountsDrawerHeader(
-                  accountName: Text('Loading...'),
-                  accountEmail: Text('Please wait'),
+                  accountName: Text(AppStrings.loading),
+                  accountEmail: Text(AppStrings.pleaseWait),
                   currentAccountPicture: CircularProgressIndicator(),
                 );
               } else {
                 return const UserAccountsDrawerHeader(
-                  accountName: Text('User'),
-                  accountEmail: Text('No user data'),
+                  accountName: Text(AppStrings.user),
+                  accountEmail: Text(AppStrings.noUserData),
                   currentAccountPicture: Icon(Icons.person),
                 );
               }
@@ -77,7 +78,7 @@ class TasksDrawer extends StatelessWidget {
               children: [
                 ListTile(
                   leading: const Icon(Icons.person),
-                  title: const Text('Edit Profile'),
+                  title: const Text(AppStrings.editProfile),
                   onTap: () {
                     Navigator.pop(context);
                     _showEditProfileDialog(context);
@@ -85,7 +86,7 @@ class TasksDrawer extends StatelessWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.info),
-                  title: const Text('User Info'),
+                  title: const Text(AppStrings.userInfo),
                   onTap: () {
                     Navigator.pop(context);
                     _showUserInfoDialog(context);
@@ -95,7 +96,7 @@ class TasksDrawer extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.logout, color: Colors.red),
                   title: const Text(
-                    'Logout',
+                    AppStrings.logout,
                     style: TextStyle(color: AppColors.red),
                   ),
                   onTap: () {
@@ -142,188 +143,190 @@ class TasksDrawer extends StatelessWidget {
               ],
             ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: Colors.white.withOpacity(0.2),
-                      backgroundImage: user.photoURL != null
-                          ? NetworkImage(user.photoURL!)
-                          : null,
-                      child: user.photoURL == null
-                          ? const Icon(
-                              Icons.person,
-                              size: 40,
-                              color: Colors.white,
-                            )
-                          : null,
-                    ),
-                    SizedBox(height: 16.h),
-                    Text(
-                      'Edit Profile',
-                      style: AppTextStyles.dialogTitleTextStyle,
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      'Update your personal information',
-                      style: AppTextStyles.dialogSubtitleTextStyle,
-                    ),
-                  ],
-                ),
-              ),
-              // Form Content
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(20.r),
-                    bottomRight: Radius.circular(20.r),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 40,
+                        backgroundColor: Colors.white.withOpacity(0.2),
+                        backgroundImage: user.photoURL != null
+                            ? NetworkImage(user.photoURL!)
+                            : null,
+                        child: user.photoURL == null
+                            ? const Icon(
+                                Icons.person,
+                                size: 40,
+                                color: Colors.white,
+                              )
+                            : null,
+                      ),
+                      SizedBox(height: 16.h),
+                      Text(
+                        AppStrings.editProfile,
+                        style: AppTextStyles.dialogTitleTextStyle,
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        AppStrings.updateYourPersonalInformation,
+                        style: AppTextStyles.dialogSubtitleTextStyle,
+                      ),
+                    ],
                   ),
                 ),
-                child: Column(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12.r),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: AppColors.fieldShadow,
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: nameController,
-                        decoration: InputDecoration(
-                          labelText: 'Display Name',
-                          hintText: 'Enter your display name',
-                          prefixIcon: const Icon(Icons.person_outline,
-                              color: AppColors.drawerGradient1),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: AppColors.cardBackground,
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                            borderSide: const BorderSide(
-                                color: AppColors.drawerGradient1, width: 2),
-                          ),
-                        ),
-                      ),
+                // Form Content
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20.r),
+                      bottomRight: Radius.circular(20.r),
                     ),
-                    SizedBox(height: 16.h),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12.r),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: AppColors.fieldShadow,
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: emailController,
-                        decoration: InputDecoration(
-                          labelText: 'Email',
-                          hintText: 'Your email address',
-                          prefixIcon: const Icon(Icons.email_outlined,
-                              color: AppColors.grey),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: AppColors.cardBackground,
-                          enabled: false,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 24.h),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            height: 50.h,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12.r),
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppColors.grey.withOpacity(0.1),
-                                  AppColors.grey.withOpacity(0.2),
-                                ],
-                              ),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12.r),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: AppColors.fieldShadow,
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
                             ),
-                            child: TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text(
-                                'Cancel',
-                                style: AppTextStyles.buttonTextStyleSecondary,
-                              ),
+                          ],
+                        ),
+                        child: TextField(
+                          controller: nameController,
+                          decoration: InputDecoration(
+                            labelText: AppStrings.displayName,
+                            hintText: AppStrings.enterYourDisplayName,
+                            prefixIcon: const Icon(Icons.person_outline,
+                                color: AppColors.drawerGradient1),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: AppColors.cardBackground,
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                              borderSide: const BorderSide(
+                                  color: AppColors.drawerGradient1, width: 2),
                             ),
                           ),
                         ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Container(
-                            height: 50.h,
-                            decoration: BoxDecoration(
+                      ),
+                      SizedBox(height: 16.h),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12.r),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: AppColors.fieldShadow,
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: TextField(
+                          controller: emailController,
+                          decoration: InputDecoration(
+                            labelText: AppStrings.email,
+                            hintText: AppStrings.yourEmailAddress,
+                            prefixIcon: const Icon(Icons.email_outlined,
+                                color: AppColors.grey),
+                            border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12.r),
-                              gradient: const LinearGradient(
-                                colors: [
-                                  AppColors.drawerGradient1,
-                                  AppColors.drawerGradient2
-                                ],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.drawerGradient1
-                                      .withOpacity(0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: AppColors.cardBackground,
+                            enabled: false,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 24.h),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              height: 50.h,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12.r),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.grey.withOpacity(0.1),
+                                    AppColors.grey.withOpacity(0.2),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: TextButton(
-                              onPressed: () {
-                                if (nameController.text.trim().isNotEmpty) {
-                                  userProfileCubit.updateProfile(
-                                    displayName: nameController.text.trim(),
-                                  );
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content:
-                                          Text('Profile updated successfully'),
-                                      backgroundColor: AppColors.green,
-                                    ),
-                                  );
-                                }
-                              },
-                              child: Text(
-                                'Save Changes',
-                                style: AppTextStyles.buttonTextStyle,
+                              ),
+                              child: TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text(
+                                  AppStrings.cancel,
+                                  style: AppTextStyles.buttonTextStyleSecondary,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Container(
+                              height: 50.h,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12.r),
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    AppColors.drawerGradient1,
+                                    AppColors.drawerGradient2
+                                  ],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.drawerGradient1
+                                        .withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: TextButton(
+                                onPressed: () {
+                                  if (nameController.text.trim().isNotEmpty) {
+                                    userProfileCubit.updateProfile(
+                                      displayName: nameController.text.trim(),
+                                    );
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(AppStrings
+                                            .profileUpdatedSuccessfully),
+                                        backgroundColor: AppColors.green,
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Text(
+                                  AppStrings.saveChanges,
+                                  style: AppTextStyles.buttonTextStyle,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

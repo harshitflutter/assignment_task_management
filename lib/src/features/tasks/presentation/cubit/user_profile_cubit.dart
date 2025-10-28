@@ -1,63 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:task_management/src/core/constants/app_strings.dart';
 
-// Events
-abstract class UserProfileEvent extends Equatable {
-  const UserProfileEvent();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class LoadUserProfile extends UserProfileEvent {
-  const LoadUserProfile();
-}
-
-class UpdateUserProfile extends UserProfileEvent {
-  final String displayName;
-  final String? photoUrl;
-
-  const UpdateUserProfile({
-    required this.displayName,
-    this.photoUrl,
-  });
-
-  @override
-  List<Object?> get props => [displayName, photoUrl];
-}
-
-// States
-abstract class UserProfileState extends Equatable {
-  const UserProfileState();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class UserProfileInitial extends UserProfileState {
-  const UserProfileInitial();
-}
-
-class UserProfileLoading extends UserProfileState {}
-
-class UserProfileLoaded extends UserProfileState {
-  final User user;
-
-  const UserProfileLoaded(this.user);
-
-  @override
-  List<Object?> get props => [user];
-}
-
-class UserProfileError extends UserProfileState {
-  final String message;
-
-  const UserProfileError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
+part 'user_profile_state.dart';
 
 // Cubit
 class UserProfileCubit extends Cubit<UserProfileState> {
@@ -74,7 +20,7 @@ class UserProfileCubit extends Cubit<UserProfileState> {
     if (user != null) {
       emit(UserProfileLoaded(user));
     } else {
-      emit(const UserProfileError('No user found'));
+      emit(const UserProfileError(AppStrings.noUserFound));
     }
   }
 
@@ -99,13 +45,13 @@ class UserProfileCubit extends Cubit<UserProfileState> {
         if (updatedUser != null) {
           emit(UserProfileLoaded(updatedUser));
         } else {
-          emit(const UserProfileError('Failed to update profile'));
+          emit(const UserProfileError(AppStrings.somethingWentWrong));
         }
       } else {
-        emit(const UserProfileError('No user found'));
+        emit(const UserProfileError(AppStrings.noUserFound));
       }
     } catch (e) {
-      emit(UserProfileError('Failed to update profile: $e'));
+      emit(const UserProfileError(AppStrings.unexpectedError));
     }
   }
 
@@ -114,7 +60,7 @@ class UserProfileCubit extends Cubit<UserProfileState> {
       await _auth.signOut();
       emit(const UserProfileInitial()); // Reset to initial state after logout
     } catch (e) {
-      emit(UserProfileError('Failed to logout: $e'));
+      emit(const UserProfileError(AppStrings.unexpectedError));
     }
   }
 }

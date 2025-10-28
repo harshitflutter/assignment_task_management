@@ -1,159 +1,14 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:task_management/src/core/constants/app_strings.dart';
 import 'package:task_management/src/features/tasks/domain/entities/sync_result.dart';
 import 'package:task_management/src/features/tasks/domain/entities/task_entity.dart';
 import 'package:task_management/src/features/tasks/domain/entities/conflict_sync_result.dart';
 import 'package:task_management/src/features/tasks/domain/entities/task_conflict.dart';
 import 'package:task_management/src/features/tasks/domain/repositories/task_repository.dart';
 
-// Events
-abstract class TaskEvent extends Equatable {
-  const TaskEvent();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class LoadTasks extends TaskEvent {
-  final String userId;
-  const LoadTasks(this.userId);
-}
-
-class CreateTask extends TaskEvent {
-  final TaskEntity task;
-  const CreateTask(this.task);
-}
-
-class UpdateTask extends TaskEvent {
-  final TaskEntity task;
-  const UpdateTask(this.task);
-}
-
-class DeleteTask extends TaskEvent {
-  final String taskId;
-  const DeleteTask(this.taskId);
-}
-
-class ToggleTaskStatus extends TaskEvent {
-  final String taskId;
-  const ToggleTaskStatus(this.taskId);
-}
-
-class SyncTasks extends TaskEvent {
-  final String userId;
-  const SyncTasks(this.userId);
-}
-
-class SyncTasksWithConflictDetection extends TaskEvent {
-  final String userId;
-  const SyncTasksWithConflictDetection(this.userId);
-}
-
-class ResolveConflict extends TaskEvent {
-  final ConflictResolutionResult resolution;
-  const ResolveConflict(this.resolution);
-}
-
-// States
-abstract class TaskState extends Equatable {
-  const TaskState();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class TaskInitial extends TaskState {}
-
-class TaskLoading extends TaskState {}
-
-class TaskLoaded extends TaskState {
-  final List<TaskEntity> tasks;
-  final bool isSyncing;
-  final DateTime? lastSyncedAt;
-  final bool isOnline;
-
-  const TaskLoaded(
-    this.tasks, {
-    this.isSyncing = false,
-    this.lastSyncedAt,
-    this.isOnline = true,
-  });
-
-  @override
-  List<Object?> get props => [tasks, isSyncing, lastSyncedAt, isOnline];
-
-  TaskLoaded copyWith({
-    List<TaskEntity>? tasks,
-    bool? isSyncing,
-    DateTime? lastSyncedAt,
-    bool? isOnline,
-  }) {
-    return TaskLoaded(
-      tasks ?? this.tasks,
-      isSyncing: isSyncing ?? this.isSyncing,
-      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
-      isOnline: isOnline ?? this.isOnline,
-    );
-  }
-}
-
-class TaskError extends TaskState {
-  final String message;
-  const TaskError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
-
-class TaskCreated extends TaskState {
-  final TaskEntity task;
-  const TaskCreated(this.task);
-
-  @override
-  List<Object?> get props => [task];
-}
-
-class TaskUpdated extends TaskState {
-  final TaskEntity task;
-  const TaskUpdated(this.task);
-
-  @override
-  List<Object?> get props => [task];
-}
-
-class TaskDeleted extends TaskState {
-  final String taskId;
-  const TaskDeleted(this.taskId);
-
-  @override
-  List<Object?> get props => [taskId];
-}
-
-class TaskSynced extends TaskState {
-  final SyncResult syncResult;
-  const TaskSynced(this.syncResult);
-
-  @override
-  List<Object?> get props => [syncResult];
-}
-
-class ConflictsDetected extends TaskState {
-  final List<TaskConflict> conflicts;
-  final ConflictSyncResult syncResult;
-  const ConflictsDetected(this.conflicts, this.syncResult);
-
-  @override
-  List<Object?> get props => [conflicts, syncResult];
-}
-
-class ConflictResolved extends TaskState {
-  final String taskId;
-  const ConflictResolved(this.taskId);
-
-  @override
-  List<Object?> get props => [taskId];
-}
+part 'task_state.dart';
 
 // Cubit
 class TaskCubit extends Cubit<TaskState> {
@@ -186,7 +41,7 @@ class TaskCubit extends Cubit<TaskState> {
         await syncTasks(userId, isManualSync: false);
       }
     } catch (e) {
-      emit(TaskError('Failed to load tasks: $e'));
+      emit(const TaskError(AppStrings.failedToLoadTasks));
     }
   }
 
@@ -210,7 +65,7 @@ class TaskCubit extends Cubit<TaskState> {
       _triggerAutoSyncIfOnline(task.userId);
     } catch (e) {
       // If create fails, revert to previous state
-      emit(TaskError('Failed to create task: $e'));
+      emit(const TaskError(AppStrings.failedToCreateTask));
       // Reload tasks to get correct state
       await loadTasks(task.userId);
     }
@@ -240,7 +95,7 @@ class TaskCubit extends Cubit<TaskState> {
       _triggerAutoSyncIfOnline(task.userId);
     } catch (e) {
       // If update fails, revert to previous state
-      emit(TaskError('Failed to update task: $e'));
+      emit(const TaskError(AppStrings.failedToUpdateTask));
       // Reload tasks to get correct state
       await loadTasks(task.userId);
     }
@@ -266,7 +121,7 @@ class TaskCubit extends Cubit<TaskState> {
       _triggerAutoSyncIfOnline(userId);
     } catch (e) {
       // If delete fails, revert to previous state
-      emit(TaskError('Failed to delete task: $e'));
+      emit(const TaskError(AppStrings.failedToDeleteTask));
       // Reload tasks to get correct state
       await loadTasks(userId);
     }
@@ -305,7 +160,7 @@ class TaskCubit extends Cubit<TaskState> {
       _triggerAutoSyncIfOnline(userId);
     } catch (e) {
       // If update fails, revert to previous state
-      emit(TaskError('Failed to toggle task status: $e'));
+      emit(const TaskError(AppStrings.failedToToggleTaskStatus));
       // Reload tasks to get correct state
       await loadTasks(userId);
     }
@@ -315,7 +170,7 @@ class TaskCubit extends Cubit<TaskState> {
     try {
       return await _taskRepository.getTaskById(taskId);
     } catch (e) {
-      emit(TaskError('Failed to get task: $e'));
+      emit(const TaskError(AppStrings.failedToLoadTask));
       return null;
     }
   }
@@ -374,7 +229,7 @@ class TaskCubit extends Cubit<TaskState> {
       if (currentState is TaskLoaded) {
         emit(currentState.copyWith(isSyncing: false));
       }
-      emit(TaskError('Failed to sync tasks: $e'));
+      emit(const TaskError(AppStrings.failedToSyncTasks));
     }
   }
 
@@ -385,7 +240,7 @@ class TaskCubit extends Cubit<TaskState> {
       // Emit conflict resolved state
       emit(ConflictResolved(resolution.taskId));
     } catch (e) {
-      emit(TaskError('Failed to resolve conflict: $e'));
+      emit(const TaskError(AppStrings.failedToResolveConflict));
     }
   }
 
@@ -411,7 +266,7 @@ class TaskCubit extends Cubit<TaskState> {
       //   emit(TaskSynced(syncResult));
       // }
     } catch (e) {
-      emit(TaskError('Failed to complete conflict resolution: $e'));
+      emit(const TaskError(AppStrings.failedToCompleteConflictResolution));
     }
   }
 
@@ -431,7 +286,7 @@ class TaskCubit extends Cubit<TaskState> {
         syncTasks(userId, isManualSync: false);
       }
     } catch (e) {
-      // Ignore connectivity check errors
+      // Ignore connectivity check errors 
     }
   }
 

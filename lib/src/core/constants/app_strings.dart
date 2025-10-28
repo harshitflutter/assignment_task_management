@@ -1,8 +1,19 @@
 class AppStrings {
+  static const String user = 'User';
   static const String loading = 'Loading...';
   static const String noInternet = 'No Internet Connection';
   static const String pleaseCheckNetwork =
       'Please check your network connection';
+  static const String noEmail = 'No email';
+  static const String noUserData = 'No user data';
+  static const String editProfile = 'Edit Profile';
+  static const String userInfo = 'User Info';
+  static const String updateYourPersonalInformation = 'Update your personal information';
+  static const String displayName = 'Display Name';
+  static const String enterYourDisplayName = 'Enter your display name';
+  static const String yourEmailAddress = 'Your email address';
+  static const String saveChanges = 'Save Changes';
+  static const String profileUpdatedSuccessfully = 'Profile updated successfully';
 
   // Firebase Auth Error Messages
   static const String noUserFound = 'No user found with this email.';
@@ -28,6 +39,7 @@ class AppStrings {
   static const String signIn = 'Sign In';
   static const String signUp = 'Sign Up';
   static const String createAccountButton = 'Create Account';
+  
 
   // Form Fields
   static const String email = 'Email Address';
@@ -305,4 +317,46 @@ class AppStrings {
   static const String conflictsResolved = 'Conflicts Resolved';
   static const String allConflictsHaveBeenSuccessfullyResolved =
       'All conflicts have been successfully resolved. Your tasks are now in sync.';
+
+  // User Profile
+  static const String failedToUpdateProfile = 'Failed to update profile';
+
+  // Task Management
+  static const String failedToLoadTasks = 'Failed to load tasks';
+  static const String failedToLoadTask = 'Failed to load task';
+  static const String failedToToggleTaskStatus = 'Failed to toggle task status';
+  static const String failedToSyncTasks = 'Failed to sync tasks';
+  static const String failedToCompleteConflictResolution =
+      'Failed to complete conflict resolution';
+  static const String titleIsRequired = 'Title is required';
+  static const String titleMustBeAtLeast3CharactersLong =
+      'Title must be at least 3 characters long';
+  static const String titleMustBeLessThan100Characters =
+      'Title must be less than 100 characters';
+  static const String descriptionMustBeLessThan500Characters =
+      'Description must be less than 500 characters';
+  static const String dueDateIsRequired = 'Due date is required';
+  static const String dueDateCannotBeInThePast =
+      'Due date cannot be in the past';
+  static const String dueDateCannotBeMoreThan1YearInTheFuture =
+      'Due date cannot be more than 1 year in the future';
+
+  // Date/Time
+  static const String january = 'January';
+  static const String february = 'February';
+  static const String march = 'March';
+  static const String april = 'April';
+  static const String may = 'May';
+  static const String june = 'June';
+  static const String july = 'July';
+  static const String august = 'August';
+  static const String september = 'September';
+  static const String october = 'October';
+  static const String november = 'November';
+  static const String december = 'December';
+
+  // Task Detail Page
+  static const String theTaskYouAreLookingForDoesNotExist =
+      'The task you\'re looking for doesn\'t exist';
+  static const String loadingTaskDetails = 'Loading task details...';
 }
