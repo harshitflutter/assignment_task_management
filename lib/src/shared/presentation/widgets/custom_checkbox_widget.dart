@@ -1,24 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// A modern, animated custom checkbox widget with professional styling.
-///
-/// Features:
-/// - Smooth animations and transitions
-/// - Customizable colors and sizing
-/// - Professional shadow effects
-/// - Responsive design with ScreenUtil
-/// - Accessibility support
-///
-/// Usage:
-/// ```dart
-/// CustomCheckboxWidget(
-///   value: isChecked,
-///   onChanged: (value) => setState(() => isChecked = value),
-///   activeColor: Colors.blue,
-///   size: 24,
-/// )
-/// ```
 class CustomCheckboxWidget extends StatefulWidget {
   /// Whether the checkbox is checked
   final bool value;

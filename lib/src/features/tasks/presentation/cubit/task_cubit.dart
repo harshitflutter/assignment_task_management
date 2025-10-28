@@ -3,6 +3,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:task_management/src/features/tasks/domain/entities/sync_result.dart';
 import 'package:task_management/src/features/tasks/domain/entities/task_entity.dart';
+import 'package:task_management/src/features/tasks/domain/entities/conflict_sync_result.dart';
+import 'package:task_management/src/features/tasks/domain/entities/task_conflict.dart';
 import 'package:task_management/src/features/tasks/domain/repositories/task_repository.dart';
 
 // Events
@@ -43,6 +45,16 @@ class SyncTasks extends TaskEvent {
   const SyncTasks(this.userId);
 }
 
+class SyncTasksWithConflictDetection extends TaskEvent {
+  final String userId;
+  const SyncTasksWithConflictDetection(this.userId);
+}
+
+class ResolveConflict extends TaskEvent {
+  final ConflictResolutionResult resolution;
+  const ResolveConflict(this.resolution);
+}
+
 // States
 abstract class TaskState extends Equatable {
   const TaskState();
@@ -57,10 +69,33 @@ class TaskLoading extends TaskState {}
 
 class TaskLoaded extends TaskState {
   final List<TaskEntity> tasks;
-  const TaskLoaded(this.tasks);
+  final bool isSyncing;
+  final DateTime? lastSyncedAt;
+  final bool isOnline;
+
+  const TaskLoaded(
+    this.tasks, {
+    this.isSyncing = false,
+    this.lastSyncedAt,
+    this.isOnline = true,
+  });
 
   @override
-  List<Object?> get props => [tasks];
+  List<Object?> get props => [tasks, isSyncing, lastSyncedAt, isOnline];
+
+  TaskLoaded copyWith({
+    List<TaskEntity>? tasks,
+    bool? isSyncing,
+    DateTime? lastSyncedAt,
+    bool? isOnline,
+  }) {
+    return TaskLoaded(
+      tasks ?? this.tasks,
+      isSyncing: isSyncing ?? this.isSyncing,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      isOnline: isOnline ?? this.isOnline,
+    );
+  }
 }
 
 class TaskError extends TaskState {
@@ -103,6 +138,23 @@ class TaskSynced extends TaskState {
   List<Object?> get props => [syncResult];
 }
 
+class ConflictsDetected extends TaskState {
+  final List<TaskConflict> conflicts;
+  final ConflictSyncResult syncResult;
+  const ConflictsDetected(this.conflicts, this.syncResult);
+
+  @override
+  List<Object?> get props => [conflicts, syncResult];
+}
+
+class ConflictResolved extends TaskState {
+  final String taskId;
+  const ConflictResolved(this.taskId);
+
+  @override
+  List<Object?> get props => [taskId];
+}
+
 // Cubit
 class TaskCubit extends Cubit<TaskState> {
   final TaskRepository _taskRepository;
@@ -119,7 +171,20 @@ class TaskCubit extends Cubit<TaskState> {
     emit(TaskLoading());
     try {
       final tasks = await _taskRepository.getAllTasks(userId);
-      emit(TaskLoaded(tasks));
+
+      // Check connectivity status
+      final connectivityResult = await _connectivity.checkConnectivity();
+      final isOnline = connectivityResult.isNotEmpty &&
+          connectivityResult.first != ConnectivityResult.none;
+
+      emit(TaskLoaded(tasks, isOnline: isOnline));
+
+      // Only trigger auto-sync if there are tasks to sync
+      if (tasks.isNotEmpty && isOnline) {
+        // Small delay to ensure UI is updated first
+        await Future.delayed(const Duration(milliseconds: 500));
+        await syncTasks(userId, isManualSync: false);
+      }
     } catch (e) {
       emit(TaskError('Failed to load tasks: $e'));
     }
@@ -135,7 +200,7 @@ class TaskCubit extends Cubit<TaskState> {
         updatedTasks.add(task);
 
         // Immediately update UI with optimistic update
-        emit(TaskLoaded(updatedTasks));
+        emit(currentState.copyWith(tasks: updatedTasks));
       }
 
       // Create in repository (background operation)
@@ -164,7 +229,7 @@ class TaskCubit extends Cubit<TaskState> {
           updatedTasks[taskIndex] = task;
 
           // Immediately update UI with optimistic update
-          emit(TaskLoaded(updatedTasks));
+          emit(currentState.copyWith(tasks: updatedTasks));
         }
       }
 
@@ -191,7 +256,7 @@ class TaskCubit extends Cubit<TaskState> {
             currentState.tasks.where((task) => task.id != taskId).toList();
 
         // Immediately update UI with optimistic update
-        emit(TaskLoaded(updatedTasks));
+        emit(currentState.copyWith(tasks: updatedTasks));
       }
 
       // Delete in repository (background operation)
@@ -231,7 +296,7 @@ class TaskCubit extends Cubit<TaskState> {
       updatedTasks[taskIndex] = updatedTask;
 
       // Immediately update UI with optimistic update
-      emit(TaskLoaded(updatedTasks));
+      emit(currentState.copyWith(tasks: updatedTasks));
 
       // Update in repository (background operation)
       await _taskRepository.updateTask(updatedTask);
@@ -255,20 +320,98 @@ class TaskCubit extends Cubit<TaskState> {
     }
   }
 
-  Future<void> syncTasks(String userId) async {
+  Future<void> syncTasks(String userId, {bool isManualSync = false}) async {
+    // Use conflict detection for both manual and auto syncs
+    await syncTasksWithConflictDetection(userId);
+  }
+
+  Future<void> syncTasksWithConflictDetection(String userId) async {
     try {
-      await _taskRepository.syncTasks(userId);
+      // Update sync status to show syncing
+      final currentState = state;
+      if (currentState is TaskLoaded) {
+        emit(currentState.copyWith(isSyncing: true));
+      }
+
+      final conflictSyncResult =
+          await _taskRepository.syncTasksWithConflictDetection(userId);
 
       // Get updated tasks after sync
       final tasks = await _taskRepository.getAllTasks(userId);
 
-      // Emit updated tasks first, then sync result
-      emit(TaskLoaded(tasks));
+      // Check connectivity status
+      final connectivityResult = await _connectivity.checkConnectivity();
+      final isOnline = connectivityResult.isNotEmpty &&
+          connectivityResult.first != ConnectivityResult.none;
 
-      // Emit sync result for UI feedback
-      // emit(TaskSynced(syncResult));
+      // Only set lastSyncedAt if there are tasks or if sync had changes
+      DateTime? lastSyncedAt;
+      if (tasks.isNotEmpty || conflictSyncResult.syncResult.hasChanges) {
+        lastSyncedAt = DateTime.now();
+      }
+
+      if (conflictSyncResult.hasConflicts) {
+        // Emit conflicts detected state
+        emit(ConflictsDetected(
+            conflictSyncResult.conflicts, conflictSyncResult));
+      } else {
+        // Emit updated tasks with sync completion
+        emit(TaskLoaded(
+          tasks,
+          isSyncing: false,
+          lastSyncedAt: lastSyncedAt,
+          isOnline: isOnline,
+        ));
+
+        // Emit sync result for UI feedback - only show snackbar for manual syncs or if there are changes
+        // if (isManualSync || syncResult.hasChanges || !syncResult.isSuccess) {
+        //   emit(TaskSynced(syncResult));
+        // }
+      }
     } catch (e) {
+      // Update sync status to show error
+      final currentState = state;
+      if (currentState is TaskLoaded) {
+        emit(currentState.copyWith(isSyncing: false));
+      }
       emit(TaskError('Failed to sync tasks: $e'));
+    }
+  }
+
+  Future<void> resolveConflict(ConflictResolutionResult resolution) async {
+    try {
+      await _taskRepository.resolveConflict(resolution);
+
+      // Emit conflict resolved state
+      emit(ConflictResolved(resolution.taskId));
+    } catch (e) {
+      emit(TaskError('Failed to resolve conflict: $e'));
+    }
+  }
+
+  Future<void> completeConflictResolution(String userId) async {
+    try {
+      // Reload tasks after all conflicts are resolved
+      final tasks = await _taskRepository.getAllTasks(userId);
+
+      // Check connectivity status
+      final connectivityResult = await _connectivity.checkConnectivity();
+      final isOnline = connectivityResult.isNotEmpty &&
+          connectivityResult.first != ConnectivityResult.none;
+
+      // Emit updated tasks
+      emit(TaskLoaded(
+        tasks,
+        isSyncing: false,
+        lastSyncedAt: DateTime.now(),
+        isOnline: isOnline,
+      ));
+      // Emit sync result for UI feedback - only show snackbar for manual syncs or if there are changes
+      // if (isManualSync || syncResult.hasChanges || !syncResult.isSuccess) {
+      //   emit(TaskSynced(syncResult));
+      // }
+    } catch (e) {
+      emit(TaskError('Failed to complete conflict resolution: $e'));
     }
   }
 
@@ -280,8 +423,28 @@ class TaskCubit extends Cubit<TaskState> {
           connectivityResult.first != ConnectivityResult.none;
 
       if (isOnline) {
+        // Add a small delay to prevent rapid successive syncs
+        // This helps avoid conflicts when multiple updates happen quickly
+        await Future.delayed(const Duration(milliseconds: 500));
+
         // Trigger sync in background without blocking UI
-        syncTasks(userId);
+        syncTasks(userId, isManualSync: false);
+      }
+    } catch (e) {
+      // Ignore connectivity check errors
+    }
+  }
+
+  // Method to update connectivity status
+  Future<void> updateConnectivityStatus() async {
+    try {
+      final connectivityResult = await _connectivity.checkConnectivity();
+      final isOnline = connectivityResult.isNotEmpty &&
+          connectivityResult.first != ConnectivityResult.none;
+
+      final currentState = state;
+      if (currentState is TaskLoaded) {
+        emit(currentState.copyWith(isOnline: isOnline));
       }
     } catch (e) {
       // Ignore connectivity check errors

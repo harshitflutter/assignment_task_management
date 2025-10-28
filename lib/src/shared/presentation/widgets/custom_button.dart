@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:task_management/src/core/constants/app_colors.dart';
 import 'package:task_management/src/core/constants/app_strings.dart';
-import 'package:task_management/src/core/styles/app_text_stryles.dart';
+import 'package:task_management/src/core/constants/app_text_styles.dart';
 
 class CustomButton extends StatelessWidget {
   final double? height;

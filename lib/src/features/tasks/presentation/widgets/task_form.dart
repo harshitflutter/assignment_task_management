@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:task_management/src/core/constants/app_colors.dart';
-import 'package:task_management/src/core/styles/app_text_stryles.dart';
+import 'package:task_management/src/core/constants/app_text_styles.dart';
+import 'package:task_management/src/core/constants/app_strings.dart';
+import 'package:task_management/src/core/utils/snackbar_utils.dart';
 import 'package:task_management/src/features/tasks/presentation/cubit/add_task_cubit.dart';
 import 'package:task_management/src/features/tasks/presentation/cubit/form_cubit.dart';
 import 'package:task_management/src/features/tasks/presentation/cubit/task_cubit.dart';
@@ -68,18 +70,19 @@ class TaskForm extends StatelessWidget {
     );
   }
 
+  /// Builds the task title input field with validation.
   Widget _buildTitleField(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Task Title *',
+          '${AppStrings.taskTitle} *',
           style: AppTextStyles.primary400Size16,
         ),
         SizedBox(height: 8.h),
         CustomTestFormFieldWidget(
           textEditingController: titleController,
-          hintText: 'What needs to be done?',
+          hintText: AppStrings.enterTaskTitle,
           prefixIcon: const Icon(
             Icons.title,
             color: AppColors.primary,
@@ -87,7 +90,7 @@ class TaskForm extends StatelessWidget {
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return 'Task title is required';
+              return AppStrings.pleaseEnterTaskTitle;
             }
             return null;
           },
@@ -116,18 +119,19 @@ class TaskForm extends StatelessWidget {
     );
   }
 
+  /// Builds the task description input field.
   Widget _buildDescriptionField(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Description',
+          AppStrings.taskDescription,
           style: AppTextStyles.primary400Size16,
         ),
         SizedBox(height: 8.h),
         CustomTestFormFieldWidget(
           textEditingController: descriptionController,
-          hintText: 'Add more details about this task...',
+          hintText: AppStrings.enterTaskDescription,
           maxLines: 4,
           prefixIcon: const Icon(
             Icons.description_outlined,
@@ -159,6 +163,7 @@ class TaskForm extends StatelessWidget {
     );
   }
 
+  /// Builds the due date selection field with calendar picker.
   Widget _buildDatePicker(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
@@ -205,14 +210,14 @@ class TaskForm extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Due Date *',
+                        '${AppStrings.dueDate} *',
                         style: AppTextStyles.primary400Size16,
                       ),
                       SizedBox(height: 4.h),
                       Text(
                         selectedDate != null
                             ? _formatDate(context, selectedDate!)
-                            : 'Select when this task is due',
+                            : AppStrings.selectDueDate,
                         style: AppTextStyles.primary400Size16.copyWith(
                           color: selectedDate != null
                               ? AppColors.purple
@@ -235,6 +240,7 @@ class TaskForm extends StatelessWidget {
     );
   }
 
+  /// Builds the attachment picker section for file uploads.
   Widget _buildAttachmentSection(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -271,12 +277,12 @@ class TaskForm extends StatelessWidget {
                 ),
               ),
               Text(
-                'Attachments',
+                AppStrings.attachments,
                 style: AppTextStyles.primary400Size16,
               ),
               const Spacer(),
               Text(
-                'Optional',
+                AppStrings.optional,
                 style: AppTextStyles.hint500Size12.copyWith(
                   color: AppColors.grey,
                   fontStyle: FontStyle.italic,
@@ -295,6 +301,7 @@ class TaskForm extends StatelessWidget {
     );
   }
 
+  /// Builds validation error messages display.
   Widget _buildValidationMessages(BuildContext context) {
     return BlocBuilder<AddTaskCubit, AddTaskState>(
       builder: (context, state) {
@@ -321,7 +328,7 @@ class TaskForm extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Required Fields Missing',
+                        AppStrings.requiredFieldsMissing,
                         style: AppTextStyles.primary400Size16.copyWith(
                           color: AppColors.orange,
                         ),
@@ -347,6 +354,7 @@ class TaskForm extends StatelessWidget {
     );
   }
 
+  /// Opens date picker dialog for due date selection.
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -370,53 +378,64 @@ class TaskForm extends StatelessWidget {
     }
   }
 
+  /// Formats date for display using AddTaskCubit formatter.
   String _formatDate(BuildContext context, DateTime date) {
     return context.read<AddTaskCubit>().formatDate(date);
   }
 
+  /// Handles task creation or update based on form state and mode.
   Future<void> _handleSaveTask(
       BuildContext context, FormInitial formState) async {
     if (formState.title.isNotEmpty && formState.selectedDate != null) {
       if (isEditMode && taskId != null) {
-        // Edit mode - update existing task
-        final originalTask =
-            await context.read<TaskCubit>().getTaskById(taskId!);
-        if (originalTask != null && context.mounted) {
-          final updatedTask = originalTask.copyWith(
-            title: formState.title.trim(),
-            description: formState.description.trim(),
-            dueDate: formState.selectedDate!,
-            attachmentPath: formState.attachmentPath,
-            attachmentName: formState.attachmentName,
-            updatedAt: DateTime.now(),
-          );
-          await context.read<TaskCubit>().updateTask(updatedTask);
-          if (context.mounted) {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Task updated successfully'),
-                backgroundColor: AppColors.green,
-              ),
+        context.read<AddTaskCubit>().setLoading(formState);
+
+        try {
+          final originalTask =
+              await context.read<TaskCubit>().getTaskById(taskId!);
+          if (originalTask != null && context.mounted) {
+            final attachmentWasRemoved = originalTask.attachmentPath != null &&
+                originalTask.attachmentPath!.isNotEmpty &&
+                (formState.attachmentPath == null ||
+                    formState.attachmentPath!.isEmpty);
+
+            final updatedTask = originalTask.copyWith(
+              title: formState.title.trim(),
+              description: formState.description.trim(),
+              dueDate: formState.selectedDate!,
+              attachmentPath: formState.attachmentPath,
+              attachmentName: formState.attachmentName,
+              updatedAt: DateTime.now(),
+              attachmentRemoved: attachmentWasRemoved,
             );
+            await context.read<TaskCubit>().updateTask(updatedTask);
+            if (context.mounted) {
+              Navigator.pop(context);
+              SnackbarUtils.showSuccess(
+                  context, AppStrings.taskUpdatedSuccessfully);
+            }
+          }
+        } catch (e) {
+          if (context.mounted) {
+            context
+                .read<AddTaskCubit>()
+                .setError('${AppStrings.failedToUpdateTask}: $e');
+            SnackbarUtils.showError(
+                context, '${AppStrings.failedToUpdateTask}: $e');
           }
         }
       } else {
-        // Add mode - create new task
         await context.read<AddTaskCubit>().createTaskFromForm(formState);
         if (context.mounted) {
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Task created successfully'),
-              backgroundColor: AppColors.green,
-            ),
-          );
+          SnackbarUtils.showSuccess(
+              context, AppStrings.taskCreatedSuccessfully);
         }
       }
     }
   }
 
+  /// Builds the save/update button with loading state and validation.
   Widget _buildSaveButton(BuildContext context) {
     return BlocBuilder<AddTaskCubit, AddTaskState>(
       builder: (context, addTaskState) {
@@ -425,10 +444,11 @@ class TaskForm extends StatelessWidget {
             final currentFormState = formState as FormInitial;
             final addTaskCubit = context.read<AddTaskCubit>();
             final isValid = addTaskCubit.isFormValid(currentFormState);
+            final isLoading = addTaskState is AddTaskCreating;
 
             return InkWell(
               borderRadius: BorderRadius.circular(12),
-              onTap: isValid
+              onTap: (isValid && !isLoading)
                   ? () => _handleSaveTask(context, currentFormState)
                   : null,
               child: AnimatedContainer(
@@ -459,24 +479,52 @@ class TaskForm extends StatelessWidget {
                       horizontal: 20,
                       vertical: 12,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.check_circle_outline,
-                          color: !isValid ? AppColors.purple : AppColors.white,
-                          size: 20,
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          isEditMode ? 'Update' : 'Save',
-                          style: AppTextStyles.primary400Size16.copyWith(
-                            color:
-                                !isValid ? AppColors.purple : AppColors.white,
+                    child: isLoading
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 20.w,
+                                height: 20.w,
+                                child: const CircularProgressIndicator(
+                                  color: AppColors.white,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Text(
+                                isEditMode
+                                    ? AppStrings.updating
+                                    : AppStrings.saving,
+                                style: AppTextStyles.primary400Size16.copyWith(
+                                  color: AppColors.white,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.check_circle_outline,
+                                color: !isValid
+                                    ? AppColors.purple
+                                    : AppColors.white,
+                                size: 20,
+                              ),
+                              SizedBox(width: 8.w),
+                              Text(
+                                isEditMode
+                                    ? AppStrings.update
+                                    : AppStrings.save,
+                                style: AppTextStyles.primary400Size16.copyWith(
+                                  color: !isValid
+                                      ? AppColors.purple
+                                      : AppColors.white,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               ),

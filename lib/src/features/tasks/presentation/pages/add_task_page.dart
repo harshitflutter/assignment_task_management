@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:task_management/src/core/constants/app_colors.dart';
-import 'package:task_management/src/core/styles/app_text_stryles.dart';
+import 'package:task_management/src/core/constants/app_text_styles.dart';
+import 'package:task_management/src/core/constants/app_strings.dart';
+import 'package:task_management/src/core/utils/snackbar_utils.dart';
 import 'package:task_management/src/features/tasks/domain/entities/task_entity.dart';
 import 'package:task_management/src/features/tasks/presentation/cubit/add_task_cubit.dart';
 import 'package:task_management/src/features/tasks/presentation/cubit/form_cubit.dart';
@@ -12,7 +14,7 @@ import 'package:task_management/src/features/tasks/presentation/cubit/task_cubit
 import 'package:task_management/src/features/tasks/presentation/widgets/task_form.dart';
 
 class AddTaskPage extends StatefulWidget {
-  final String? taskId; // null for add, taskId for edit
+  final String? taskId;
 
   const AddTaskPage({super.key, this.taskId});
 
@@ -49,13 +51,14 @@ class _AddTaskPageState extends State<AddTaskPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
               backgroundColor: AppColors.formBackground,
-              body: Center(child: CircularProgressIndicator()),
+              body: SafeArea(
+                child: Center(child: CircularProgressIndicator()),
+              ),
             );
           }
 
           final task = snapshot.data;
 
-          // Set controller text when task data is loaded
           if (task != null) {
             _titleController.text = task.title;
             _descriptionController.text = task.description;
@@ -175,15 +178,15 @@ class _AddTaskPageState extends State<AddTaskPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.isEditMode ? 'Edit Task' : 'Create New Task',
+            widget.isEditMode ? AppStrings.editTask : AppStrings.createNewTask,
             style: AppTextStyles.primary400Size16.copyWith(
               color: AppColors.white,
             ),
           ),
           Text(
             widget.isEditMode
-                ? 'Update your task details'
-                : 'Add details to organize your work',
+                ? AppStrings.updateYourTaskDetails
+                : AppStrings.addDetailsToOrganizeYourWork,
             style: AppTextStyles.hint500Size12.copyWith(
               color: AppColors.white.withOpacity(0.8),
             ),
@@ -198,107 +201,57 @@ class _AddTaskPageState extends State<AddTaskPage> {
       listener: (context, state) {
         if (state is TaskCreated) {
           Navigator.pop(context);
-          _showSuccessSnackBar(context, 'Task created successfully');
+          SnackbarUtils.showSuccess(
+              context, AppStrings.taskCreatedSuccessfully);
         } else if (state is TaskUpdated) {
           Navigator.pop(context);
-          _showSuccessSnackBar(context, 'Task updated successfully');
+          SnackbarUtils.showSuccess(
+              context, AppStrings.taskUpdatedSuccessfully);
         } else if (state is TaskError) {
-          _showErrorSnackBar(context, state.message);
+          SnackbarUtils.showError(context, state.message);
         }
       },
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: BlocBuilder<FormCubit, FormCubitState>(
-          builder: (context, formState) {
-            final currentFormState = formState as FormInitial;
-            return TaskForm(
-              titleController: _titleController,
-              descriptionController: _descriptionController,
-              isEditMode: widget.isEditMode,
-              taskId: widget.taskId,
-              selectedDate: currentFormState.selectedDate,
-              attachmentPath: currentFormState.attachmentPath,
-              attachmentName: currentFormState.attachmentName,
-              onTitleChanged: (title) {
-                context.read<FormCubit>().updateTitle(title);
-                _validateForm(context, currentFormState.copyWith(title: title));
-              },
-              onDescriptionChanged: (description) {
-                context.read<FormCubit>().updateDescription(description);
-                _validateForm(context,
-                    currentFormState.copyWith(description: description));
-              },
-              onDateChanged: (date) {
-                context.read<FormCubit>().updateDate(date);
-                _validateForm(
-                    context, currentFormState.copyWith(selectedDate: date));
-              },
-              onAttachmentChanged: (path, name) {
-                context.read<FormCubit>().updateAttachment(path, name);
-                _validateForm(
-                    context,
-                    currentFormState.copyWith(
-                      attachmentPath: path,
-                      attachmentName: name,
-                    ));
-              },
-            );
-          },
+      child: BlocListener<FormCubit, FormCubitState>(
+        listener: (context, formState) {
+          if (formState is FormInitial) {
+            _validateForm(context, formState);
+          }
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: BlocBuilder<FormCubit, FormCubitState>(
+            builder: (context, formState) {
+              final currentFormState = formState as FormInitial;
+              return TaskForm(
+                titleController: _titleController,
+                descriptionController: _descriptionController,
+                isEditMode: widget.isEditMode,
+                taskId: widget.taskId,
+                selectedDate: currentFormState.selectedDate,
+                attachmentPath: currentFormState.attachmentPath,
+                attachmentName: currentFormState.attachmentName,
+                onTitleChanged: (title) {
+                  context.read<FormCubit>().updateTitle(title);
+                },
+                onDescriptionChanged: (description) {
+                  context.read<FormCubit>().updateDescription(description);
+                },
+                onDateChanged: (date) {
+                  context.read<FormCubit>().updateDate(date);
+                },
+                onAttachmentChanged: (path, name) {
+                  context.read<FormCubit>().updateAttachment(path, name);
+                },
+              );
+            },
+          ),
         ),
       ),
     );
   }
 
+  /// Validates current form state using business rules in [AddTaskCubit].
   void _validateForm(BuildContext context, FormInitial formState) {
     context.read<AddTaskCubit>().validateForm(formState);
-  }
-
-  void _showSuccessSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: AppColors.white),
-            SizedBox(width: 8.w),
-            Text(
-              message,
-              style: AppTextStyles.primary400Size16.copyWith(
-                color: AppColors.white,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: AppColors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
-  }
-
-  void _showErrorSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error, color: AppColors.white),
-            const SizedBox(width: 8),
-            Expanded(
-                child: Text(
-              message,
-              style: AppTextStyles.primary400Size16.copyWith(
-                color: AppColors.white,
-              ),
-            )),
-          ],
-        ),
-        backgroundColor: AppColors.red,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
   }
 }

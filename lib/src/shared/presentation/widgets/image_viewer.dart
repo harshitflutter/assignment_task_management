@@ -145,14 +145,6 @@ class FullScreenImageViewer extends StatelessWidget {
           imageName ?? 'Image',
           style: const TextStyle(color: Colors.white),
         ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              // TODO: Add share functionality
-            },
-            icon: const Icon(Icons.share, color: Colors.white),
-          ),
-        ],
       ),
       body: Center(
         child: InteractiveViewer(

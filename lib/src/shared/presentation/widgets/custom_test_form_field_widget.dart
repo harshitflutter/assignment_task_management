@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:task_management/src/core/constants/app_colors.dart';
-import 'package:task_management/src/core/styles/app_text_stryles.dart';
+import 'package:task_management/src/core/constants/app_text_styles.dart';
 
 class CustomTestFormFieldWidget extends StatelessWidget {
   final TextInputType? textInputType;

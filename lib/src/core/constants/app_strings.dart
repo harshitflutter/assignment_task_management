@@ -134,4 +134,175 @@ class AppStrings {
   // Username Already In Use
   static const String usernameAlreadyInUse =
       'This username is already taken. Please choose another one.';
+
+  // Task Management
+  static const String tasks = 'Tasks';
+  static const String addTask = 'Add Task';
+  static const String editTask = 'Edit Task';
+  static const String createNewTask = 'Create New Task';
+  static const String updateYourTaskDetails = 'Update your task details';
+  static const String addDetailsToOrganizeYourWork =
+      'Add details to organize your work';
+  static const String taskTitle = 'Task Title';
+  static const String taskDescription = 'Description';
+  static const String dueDate = 'Due Date';
+  static const String selectDate = 'Select Date';
+  static const String selectDueDate = 'Select when this task is due';
+  static const String enterTaskTitle = 'What needs to be done?';
+  static const String enterTaskDescription =
+      'Add more details about this task...';
+  static const String pleaseEnterTaskTitle = 'Task title is required';
+  static const String requiredFieldsMissing = 'Required Fields Missing';
+  static const String optional = 'Optional';
+  static const String attachments = 'Attachments';
+  static const String save = 'Save';
+  static const String update = 'Update';
+  static const String saving = 'Saving...';
+  static const String updating = 'Updating...';
+  static const String taskCreatedSuccessfully = 'Task created successfully';
+  static const String taskUpdatedSuccessfully = 'Task updated successfully';
+  static const String taskDeletedSuccessfully = 'Task deleted successfully';
+  static const String failedToCreateTask = 'Failed to create task';
+  static const String failedToUpdateTask = 'Failed to update task';
+  static const String failedToDeleteTask = 'Failed to delete task';
+  static const String noTasksYet = 'No tasks yet';
+  static const String createYourFirstTask =
+      'Create your first task to get started';
+  static const String allTasks = 'All Tasks';
+  static const String myTasks = 'My Tasks';
+  static const String syncTasks = 'Sync Tasks';
+  static const String deleteTask = 'Delete Task';
+  static const String areYouSureDeleteTask = 'Are you sure you want to delete';
+  static const String actionCannotBeUndone = 'This action cannot be undone';
+  static const String delete = 'Delete';
+  static const String pending = 'Pending';
+  static const String completed = 'Completed';
+  static const String overdue = 'Overdue';
+  static const String filter = 'Filter';
+  static const String clear = 'Clear';
+  static const String search = 'Search';
+  static const String searchTasks = 'Search tasks...';
+  static const String noResultsFound = 'No results found';
+  static const String tryDifferentKeywords = 'Try different keywords';
+  static const String retry = 'Retry';
+  static const String cancel = 'Cancel';
+  static const String close = 'Close';
+  static const String back = 'Back';
+  static const String next = 'Next';
+  static const String done = 'Done';
+  static const String ok = 'OK';
+  static const String yes = 'Yes';
+  static const String no = 'No';
+
+  // Conflict Resolution
+  static const String resolveConflicts = 'Resolve Conflicts';
+  static const String syncConflictDetected = 'Sync Conflict Detected';
+  static const String thisTaskWasModifiedOnBothDevices =
+      'This task was modified on both devices. Choose which version to keep.';
+  static const String conflictDetails = 'Conflict Details';
+  static const String taskId = 'Task ID';
+  static const String detectedAt = 'Detected At';
+  static const String versionComparison = 'Version Comparison';
+  static const String localVersion = 'Local Version';
+  static const String cloudVersion = 'Cloud Version';
+  static const String chooseResolution = 'Choose Resolution';
+  static const String keepLocalVersion = 'Keep Local Version';
+  static const String keepCloudVersion = 'Keep Cloud Version';
+  static const String useTheVersionFromThisDevice =
+      'Use the version from this device';
+  static const String useTheVersionFromTheServer =
+      'Use the version from the server';
+  static const String theSelectedVersionWillBeSavedAndSynced =
+      'The selected version will be saved and synced across all your devices.';
+  static const String resolveConflict = 'Resolve Conflict';
+  static const String bothVersionsModified = 'Both versions modified';
+  static const String localDeletedCloudModified =
+      'Local deleted, cloud modified';
+  static const String cloudDeletedLocalModified =
+      'Cloud deleted, local modified';
+  static const String bothVersionsDeleted = 'Both versions deleted';
+  static const String updated = 'Updated';
+  static const String attachmentRemovedSuccessfully =
+      'Attachment removed successfully';
+  static const String failedToRemoveAttachment = 'Failed to remove attachment';
+  static const String pickImage = 'Pick Image';
+  static const String pickFile = 'Pick File';
+  static const String tapToViewFullScreen = 'Tap to view full screen';
+  static const String tapToOpenFile = 'Tap to open file';
+  static const String failedToOpenFile = 'Failed to open file';
+  static const String noAttachment = 'No attachment';
+  static const String removeAttachment = 'Remove attachment';
+
+  // Profile
+  static const String profile = 'Profile';
+  static const String settings = 'Settings';
+  static const String logout = 'Logout';
+  static const String about = 'About';
+  static const String version = 'Version';
+  static const String buildNumber = 'Build Number';
+
+  // Drawer
+  static const String home = 'Home';
+  static const String completedTasks = 'Completed Tasks';
+  static const String pendingTasks = 'Pending Tasks';
+  static const String overdueTasks = 'Overdue Tasks';
+
+  // Error Messages
+  static const String somethingWentWrong = 'Something went wrong';
+  static const String pleaseTryAgain = 'Please try again';
+  static const String connectionTimeout = 'Connection timeout';
+  static const String serverError = 'Server error';
+  static const String unknownError = 'Unknown error occurred';
+
+  // Success Messages
+  static const String operationCompletedSuccessfully =
+      'Operation completed successfully';
+  static const String changesSaved = 'Changes saved';
+  static const String dataSynced = 'Data synced';
+
+  // Loading States
+  static const String loadingData = 'Loading data...';
+  static const String processing = 'Processing...';
+  static const String pleaseWait = 'Please wait...';
+
+  // Empty States
+  static const String noDataAvailable = 'No data available';
+  static const String nothingToShow = 'Nothing to show';
+  static const String emptyList = 'List is empty';
+
+  // Date/Time
+  static const String thisWeek = 'This Week';
+  static const String lastWeek = 'Last Week';
+  static const String thisMonth = 'This Month';
+  static const String lastMonth = 'Last Month';
+
+  // File Types
+  static const String image = 'Image';
+  static const String document = 'Document';
+  static const String pdf = 'PDF';
+  static const String video = 'Video';
+  static const String audio = 'Audio';
+  static const String archive = 'Archive';
+  static const String other = 'Other';
+
+  // Conflict Resolution Additional
+  static const String noConflictsFound = 'No Conflicts Found';
+  static const String allYourTasksAreInSync = 'All your tasks are in sync!';
+  static const String continueText = 'Continue';
+  static const String resolvingConflicts = 'Resolving Conflicts';
+  static const String pleaseWaitWhileWeResolveConflicts =
+      'Please wait while we resolve conflicts...';
+  static const String conflictResolvedSuccessfully =
+      'Conflict resolved successfully';
+  static const String failedToResolveConflict = 'Failed to resolve conflict';
+  static const String allConflictsResolved = 'All conflicts resolved';
+  static const String returningToTasks = 'Returning to tasks...';
+  static const String reviewAndResolveEachConflict =
+      'Review and resolve each conflict in the dialog.';
+  static const String currentConflict = 'Current conflict';
+  static const String resolveThisConflict = 'Resolve This Conflict';
+  static const String of = 'of';
+  static const String conflictsResolved = 'Conflicts Resolved';
+  static const String allConflictsHaveBeenSuccessfullyResolved =
+      'All conflicts have been successfully resolved. Your tasks are now in sync.';
 }

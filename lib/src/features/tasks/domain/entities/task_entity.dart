@@ -24,6 +24,7 @@ class TaskEntity extends Equatable {
   final String userId;
   final bool isSynced;
   final bool isDeleted;
+  final bool attachmentRemoved;
 
   const TaskEntity({
     required this.id,
@@ -38,7 +39,11 @@ class TaskEntity extends Equatable {
     required this.userId,
     this.isSynced = false,
     this.isDeleted = false,
+    this.attachmentRemoved = false,
   });
+
+  /// Returns true if the task is offline (not synced with the server)
+  bool get isOffline => !isSynced;
 
   TaskEntity copyWith({
     String? id,
@@ -53,6 +58,7 @@ class TaskEntity extends Equatable {
     String? userId,
     bool? isSynced,
     bool? isDeleted,
+    bool? attachmentRemoved,
   }) {
     return TaskEntity(
       id: id ?? this.id,
@@ -67,6 +73,7 @@ class TaskEntity extends Equatable {
       userId: userId ?? this.userId,
       isSynced: isSynced ?? this.isSynced,
       isDeleted: isDeleted ?? this.isDeleted,
+      attachmentRemoved: attachmentRemoved ?? this.attachmentRemoved,
     );
   }
 
@@ -84,5 +91,6 @@ class TaskEntity extends Equatable {
         userId,
         isSynced,
         isDeleted,
+        attachmentRemoved,
       ];
 }

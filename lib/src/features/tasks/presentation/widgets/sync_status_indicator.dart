@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:task_management/src/core/constants/app_colors.dart';
 import 'package:task_management/src/core/constants/app_strings.dart';
+import 'package:task_management/src/core/constants/app_text_styles.dart';
 
 class SyncStatusIndicator extends StatelessWidget {
   final bool isOnline;
@@ -20,29 +23,36 @@ class SyncStatusIndicator extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
         decoration: BoxDecoration(
           color: _getBackgroundColor(),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: _getBorderColor(),
             width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: _getBackgroundColor().withOpacity(0.3),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildStatusIcon(),
-            const SizedBox(width: 8),
+            SizedBox(width: 6.w),
             _buildStatusText(),
             if (isSyncing) ...[
-              const SizedBox(width: 8),
-              const SizedBox(
-                width: 12,
-                height: 12,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              SizedBox(width: 6.w),
+              SizedBox(
+                width: 10.w,
+                height: 10.h,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 1.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
                 ),
               ),
             ],
@@ -54,33 +64,33 @@ class SyncStatusIndicator extends StatelessWidget {
 
   Widget _buildStatusIcon() {
     if (isSyncing) {
-      return const Icon(
+      return Icon(
         Icons.sync,
-        size: 16,
-        color: Colors.white,
+        size: 14.sp,
+        color: AppColors.white,
       );
     } else if (isOnline) {
-      return const Icon(
+      return Icon(
         Icons.cloud_done,
-        size: 16,
-        color: Colors.white,
+        size: 14.sp,
+        color: AppColors.white,
       );
     } else {
-      return const Icon(
+      return Icon(
         Icons.cloud_off,
-        size: 16,
-        color: Colors.white,
+        size: 14.sp,
+        color: AppColors.white,
       );
     }
   }
 
   Widget _buildStatusText() {
     if (isSyncing) {
-      return const Text(
+      return Text(
         AppStrings.syncing,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 12,
+        style: AppTextStyles.hint500Size12.copyWith(
+          color: AppColors.white,
+          fontSize: 10.sp,
           fontWeight: FontWeight.w500,
         ),
       );
@@ -89,28 +99,28 @@ class SyncStatusIndicator extends StatelessWidget {
         final timeAgo = _getTimeAgo(lastSyncedAt!);
         return Text(
           '${AppStrings.synced} $timeAgo',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
+          style: AppTextStyles.hint500Size12.copyWith(
+            color: AppColors.white,
+            fontSize: 10.sp,
             fontWeight: FontWeight.w500,
           ),
         );
       } else {
-        return const Text(
+        return Text(
           AppStrings.online,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 12,
+          style: AppTextStyles.hint500Size12.copyWith(
+            color: AppColors.white,
+            fontSize: 10.sp,
             fontWeight: FontWeight.w500,
           ),
         );
       }
     } else {
-      return const Text(
+      return Text(
         AppStrings.offline,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 12,
+        style: AppTextStyles.hint500Size12.copyWith(
+          color: AppColors.white,
+          fontSize: 10.sp,
           fontWeight: FontWeight.w500,
         ),
       );
@@ -119,21 +129,21 @@ class SyncStatusIndicator extends StatelessWidget {
 
   Color _getBackgroundColor() {
     if (isSyncing) {
-      return Colors.blue;
+      return AppColors.taskCardPending;
     } else if (isOnline) {
-      return Colors.green;
+      return AppColors.taskCardCompleted;
     } else {
-      return Colors.red;
+      return AppColors.taskCardOverdue;
     }
   }
 
   Color _getBorderColor() {
     if (isSyncing) {
-      return Colors.blue.shade700;
+      return AppColors.taskCardPending.withOpacity(0.8);
     } else if (isOnline) {
-      return Colors.green.shade700;
+      return AppColors.taskCardCompleted.withOpacity(0.8);
     } else {
-      return Colors.red.shade700;
+      return AppColors.taskCardOverdue.withOpacity(0.8);
     }
   }
 

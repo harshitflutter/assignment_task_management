@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:task_management/src/core/constants/app_colors.dart';
 
 class AppTextStyles {
   // Primary Text Styles
@@ -81,8 +82,27 @@ class AppTextStyles {
   // Drawer Text Styles
   static TextStyle drawerHeaderTextStyle = TextStyle(
     fontSize: 18.sp,
-    fontWeight: FontWeight.bold,
-    color: Colors.white70,
+    fontWeight: FontWeight.w600,
+    color: AppColors.white,
+  );
+
+  // Additional Text Styles
+  static TextStyle primary700Size20 = TextStyle(
+    fontSize: 20.sp,
+    fontWeight: FontWeight.w700,
+    color: AppColors.purple,
+  );
+
+  static TextStyle primary600Size12 = TextStyle(
+    fontSize: 12.sp,
+    fontWeight: FontWeight.w600,
+    color: AppColors.purple,
+  );
+
+  static TextStyle hint500Size10 = TextStyle(
+    fontSize: 10.sp,
+    fontWeight: FontWeight.w500,
+    color: Colors.grey[600],
   );
 
   static TextStyle drawerSubtitleTextStyle = TextStyle(

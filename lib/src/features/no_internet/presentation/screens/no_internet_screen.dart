@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
 import 'package:task_management/src/core/constants/app_assets.dart';
 import 'package:task_management/src/core/constants/app_strings.dart';
-import 'package:task_management/src/core/styles/app_text_stryles.dart';
+import 'package:task_management/src/core/constants/app_text_styles.dart';
 
 class NoInternetScreen extends StatelessWidget {
   const NoInternetScreen({super.key});
@@ -24,9 +24,9 @@ class NoInternetScreen extends StatelessWidget {
                 fit: BoxFit.fill,
               ),
               SizedBox(height: 15.h),
-               Text(
+              Text(
                 AppStrings.noInternet,
-                style: AppTextStyles.primary700Size20,  
+                style: AppTextStyles.primary700Size20,
               ),
               SizedBox(height: 8.h),
               Text(

@@ -4,6 +4,7 @@ import 'package:task_management/src/core/constants/app_colors.dart';
 import 'package:task_management/src/core/constants/app_text_styles.dart';
 import 'package:task_management/src/core/routes/app_routes.dart';
 import 'package:task_management/src/features/tasks/domain/entities/task_entity.dart';
+import 'package:task_management/src/features/tasks/presentation/widgets/offline_tag.dart';
 
 class ModernTaskCard extends StatelessWidget {
   final TaskEntity task;
@@ -228,6 +229,12 @@ class ModernTaskCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
+        // Offline tag
+        if (task.isOffline) ...[
+          SizedBox(width: 8.w),
+          const OfflineTag(),
+        ],
+        SizedBox(width: 8.w),
         // Due date badge
         Container(
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),

@@ -1,11 +1,14 @@
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:task_management/src/core/constants/app_colors.dart';
-import 'package:task_management/src/core/styles/app_text_stryles.dart';
+import 'package:task_management/src/core/constants/app_text_styles.dart';
 import 'package:task_management/src/features/tasks/data/services/file_attachment_service.dart';
 import 'package:task_management/src/features/tasks/data/services/firebase_storage_service.dart';
 import 'package:task_management/src/shared/presentation/widgets/image_viewer.dart';
@@ -70,49 +73,39 @@ class AttachmentPicker extends StatelessWidget {
                 // File info row
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.purple.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        FileTypeUtils.getFileIcon(attachmentName ?? ''),
-                        color: AppColors.purple,
-                        size: 20,
+                    GestureDetector(
+                      onTap: () => _previewFile(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.purple.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          FileTypeUtils.getFileIcon(attachmentName ?? ''),
+                          color: AppColors.purple,
+                          size: 20,
+                        ),
                       ),
                     ),
                     SizedBox(width: 12.w),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            attachmentName ?? 'Unknown file',
-                            style: AppTextStyles.primary400Size16,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            'Tap to view',
-                            style: AppTextStyles.hint500Size12,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: IconButton(
-                        onPressed: () => _removeAttachment(context),
-                        icon: const Icon(Icons.close,
-                            color: AppColors.red, size: 20),
-                        padding: const EdgeInsets.all(8),
-                        constraints: const BoxConstraints(
-                          minWidth: 36,
-                          minHeight: 36,
+                      child: GestureDetector(
+                        onTap: () => _previewFile(context),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              attachmentName ?? 'Unknown file',
+                              style: AppTextStyles.primary400Size16,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              _getPreviewText(),
+                              style: AppTextStyles.hint500Size12,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -226,27 +219,112 @@ class AttachmentPicker extends StatelessWidget {
     }
   }
 
-  Future<void> _removeAttachment(BuildContext context) async {
+  String _getPreviewText() {
+    if (attachmentPath == null) return 'No attachment';
+
+    final isImageFile = FileTypeUtils.isImage(attachmentPath) ||
+        FileTypeUtils.isImageByAttachmentName(attachmentName);
+
+    if (isImageFile) {
+      return 'Tap to view full screen';
+    } else {
+      return 'Tap to open file';
+    }
+  }
+
+  Future<void> _previewFile(BuildContext context) async {
+    if (attachmentPath == null) return;
+
     try {
-      // If there's an existing attachment and it's a Firebase Storage URL, delete it
-      if (attachmentPath != null && attachmentPath!.startsWith('https://')) {
-        await _fileService.deleteFileFromFirebase(attachmentPath!);
+      final isImageFile = FileTypeUtils.isImage(attachmentPath) ||
+          FileTypeUtils.isImageByAttachmentName(attachmentName);
+
+      if (isImageFile) {
+        // For images, show full screen viewer
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FullScreenImageViewer(
+              imagePath: attachmentPath!,
+              imageName: attachmentName,
+            ),
+          ),
+        );
+      } else {
+        // For non-image files, use open_file package
+        if (attachmentPath!.startsWith('https://')) {
+          // For Firebase Storage URLs, download and open
+          await _openFirebaseFile(context);
+        } else {
+          // For local files, open directly
+          final result = await OpenFile.open(attachmentPath!);
+          if (result.type != ResultType.done && context.mounted) {
+            _showErrorSnackBar(
+                context, 'Failed to open file: ${result.message}');
+          }
+        }
       }
+    } catch (e) {
+      if (context.mounted) {
+        _showErrorSnackBar(context, 'Failed to preview file: $e');
+      }
+    }
+  }
 
-      // Update the form to remove the attachment
-      onAttachmentChanged(null, null);
-
+  Future<void> _openFirebaseFile(BuildContext context) async {
+    try {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Attachment removed successfully'),
+            content: Text('Downloading file from cloud storage...'),
+            backgroundColor: AppColors.purple,
+          ),
+        );
+      }
+
+      // Download file from Firebase Storage
+      final ref = FirebaseStorage.instance.refFromURL(attachmentPath!);
+      final bytes = await ref.getData();
+
+      if (bytes == null) {
+        throw Exception('Failed to download file from Firebase Storage');
+      }
+
+      // Get temporary directory
+      final tempDir = await getTemporaryDirectory();
+      final fileName = attachmentName ?? 'temp_file';
+      final tempFile = File('${tempDir.path}/$fileName');
+
+      // Write bytes to temporary file
+      await tempFile.writeAsBytes(bytes);
+
+      // Open the downloaded file
+      final result = await OpenFile.open(tempFile.path);
+
+      if (result.type != ResultType.done && context.mounted) {
+        _showErrorSnackBar(context, 'Failed to open file: ${result.message}');
+      } else if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('File opened successfully'),
             backgroundColor: AppColors.green,
           ),
         );
       }
+
+      // Clean up temporary file after a delay
+      Future.delayed(const Duration(minutes: 5), () async {
+        try {
+          if (await tempFile.exists()) {
+            await tempFile.delete();
+          }
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      });
     } catch (e) {
       if (context.mounted) {
-        _showErrorSnackBar(context, 'Failed to remove attachment: $e');
+        _showErrorSnackBar(context, 'Failed to open cloud file: $e');
       }
     }
   }

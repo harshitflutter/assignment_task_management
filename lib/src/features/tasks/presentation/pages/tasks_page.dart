@@ -4,17 +4,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:task_management/src/core/constants/app_colors.dart';
 import 'package:task_management/src/core/constants/app_text_styles.dart';
+import 'package:task_management/src/core/constants/app_strings.dart';
+import 'package:task_management/src/core/utils/snackbar_utils.dart';
 import 'package:task_management/src/core/routes/app_routes.dart';
 import 'package:task_management/src/features/tasks/domain/entities/task_entity.dart';
 import 'package:task_management/src/features/tasks/presentation/cubit/filter_cubit.dart';
 import 'package:task_management/src/features/tasks/presentation/cubit/task_cubit.dart';
 import 'package:task_management/src/features/tasks/presentation/cubit/user_profile_cubit.dart';
 import 'package:task_management/src/features/tasks/presentation/widgets/modern_task_card.dart';
+import 'package:task_management/src/features/tasks/presentation/widgets/sync_status_indicator.dart';
 import 'package:task_management/src/features/tasks/presentation/widgets/tasks_drawer.dart';
+import 'package:task_management/src/features/tasks/presentation/pages/conflict_resolution_page.dart';
 
 class TasksPage extends StatelessWidget {
   const TasksPage({super.key});
 
+  /// Loads tasks for the current authenticated user.
   void _loadTasks(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -22,20 +27,22 @@ class TasksPage extends StatelessWidget {
     }
   }
 
+  /// Manually triggers task synchronization for the current user.
   void _syncTasks(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      context.read<TaskCubit>().syncTasks(user.uid);
+      context.read<TaskCubit>().syncTasks(user.uid, isManualSync: true);
     }
   }
 
+  /// Filters tasks based on the selected filter type.
   List<TaskEntity> _filterTasks(List<TaskEntity> tasks, String filter) {
     switch (filter) {
-      case 'Pending':
+      case AppStrings.pending:
         return tasks
             .where((task) => task.status == TaskStatus.pending)
             .toList();
-      case 'Completed':
+      case AppStrings.completed:
         return tasks
             .where((task) => task.status == TaskStatus.completed)
             .toList();
@@ -56,7 +63,9 @@ class TasksPage extends StatelessWidget {
         backgroundColor: AppColors.background,
         appBar: _buildModernAppBar(context),
         drawer: const TasksDrawer(),
-        body: _buildTaskListBody(context),
+        body: SafeArea(
+          child: _buildTaskListBody(context),
+        ),
         floatingActionButton: _buildModernFAB(context),
       ),
     );
@@ -80,13 +89,31 @@ class TasksPage extends StatelessWidget {
       ),
       iconTheme: const IconThemeData(color: AppColors.white),
       title: Text(
-        'My Tasks',
+        AppStrings.myTasks,
         style: AppTextStyles.headerTextStyle.copyWith(
           fontSize: 24.sp,
           fontWeight: FontWeight.bold,
         ),
       ),
       actions: [
+        // Sync Status Indicator - Only show when there are tasks
+        BlocBuilder<TaskCubit, TaskState>(
+          builder: (context, state) {
+            if (state is TaskLoaded && state.tasks.isNotEmpty) {
+              return Container(
+                margin: EdgeInsets.only(right: 8.w),
+                child: SyncStatusIndicator(
+                  isOnline: state.isOnline,
+                  isSyncing: state.isSyncing,
+                  lastSyncedAt: state.lastSyncedAt,
+                  onTap: () => _syncTasks(context),
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+        // Sync Button
         Container(
           margin: EdgeInsets.only(right: 16.w),
           child: IconButton(
@@ -103,7 +130,7 @@ class TasksPage extends StatelessWidget {
                 size: 20.sp,
               ),
             ),
-            tooltip: 'Sync Tasks',
+            tooltip: AppStrings.syncTasks,
           ),
         ),
       ],
@@ -114,18 +141,22 @@ class TasksPage extends StatelessWidget {
     return BlocListener<TaskCubit, TaskState>(
       listener: (context, state) {
         if (state is TaskCreated) {
-          _showSuccessSnackBar(context, 'Task created successfully');
+          SnackbarUtils.showSuccess(
+              context, AppStrings.taskCreatedSuccessfully);
         } else if (state is TaskUpdated) {
-          _showSuccessSnackBar(context, 'Task updated successfully');
+          SnackbarUtils.showSuccess(
+              context, AppStrings.taskUpdatedSuccessfully);
         } else if (state is TaskDeleted) {
-          _showSuccessSnackBar(context, 'Task deleted successfully');
+          SnackbarUtils.showSuccess(
+              context, AppStrings.taskDeletedSuccessfully);
         } else if (state is TaskSynced) {
           _showSyncSnackBar(context, state.syncResult);
+        } else if (state is ConflictsDetected) {
+          _handleConflictsDetected(context, state);
         }
       },
       child: BlocBuilder<TaskCubit, TaskState>(
         builder: (context, state) {
-          // Load tasks on initial build if not already loaded
           if (state is TaskInitial) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               _loadTasks(context);
@@ -153,9 +184,7 @@ class TasksPage extends StatelessWidget {
 
         return Column(
           children: [
-            // Fixed Filter Chips at Top
             _buildFixedFilterChips(context, currentFilterState),
-            // Scrollable Content
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async {
@@ -470,12 +499,12 @@ class TasksPage extends StatelessWidget {
           ),
           SizedBox(height: 24.h),
           Text(
-            'No tasks yet',
+            AppStrings.noTasksYet,
             style: AppTextStyles.primary600Size18,
           ),
           SizedBox(height: 8.h),
           Text(
-            'Create your first task to get started',
+            AppStrings.createYourFirstTask,
             style: AppTextStyles.hint400Size14.copyWith(
               color: AppColors.grey,
             ),
@@ -516,33 +545,16 @@ class TasksPage extends StatelessWidget {
     );
   }
 
-  void _showSuccessSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-      ),
-    );
-  }
-
+  /// Shows sync result snackbar with appropriate styling.
   void _showSyncSnackBar(BuildContext context, dynamic syncResult) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(syncResult.summaryMessage),
-        backgroundColor: syncResult.isSuccess ? AppColors.green : AppColors.red,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    if (syncResult.isSuccess) {
+      SnackbarUtils.showSuccess(context, syncResult.summaryMessage);
+    } else {
+      SnackbarUtils.showError(context, syncResult.summaryMessage);
+    }
   }
 
+  /// Shows confirmation dialog before deleting a task.
   void _showDeleteConfirmationDialog(BuildContext context, TaskEntity task) {
     showDialog(
       context: context,
@@ -551,18 +563,18 @@ class TasksPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.r),
         ),
         title: Text(
-          'Delete Task',
+          AppStrings.deleteTask,
           style: AppTextStyles.primary600Size18,
         ),
         content: Text(
-          'Are you sure you want to delete "${task.title}"? This action cannot be undone.',
+          '${AppStrings.areYouSureDeleteTask} "${task.title}"? ${AppStrings.actionCannotBeUndone}.',
           style: AppTextStyles.primary400Size16,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
-              'Cancel',
+              AppStrings.cancel,
               style: AppTextStyles.buttonTextStyleSecondary,
             ),
           ),
@@ -581,12 +593,27 @@ class TasksPage extends StatelessWidget {
               ),
             ),
             child: Text(
-              'Delete',
+              AppStrings.delete,
               style: AppTextStyles.buttonTextStyle,
             ),
           ),
         ],
       ),
     );
+  }
+
+  /// Navigates to conflict resolution page when conflicts are detected.
+  void _handleConflictsDetected(BuildContext context, ConflictsDetected state) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ConflictResolutionPage(
+            conflicts: state.conflicts,
+            userId: user.uid,
+          ),
+        ),
+      );
+    }
   }
 }

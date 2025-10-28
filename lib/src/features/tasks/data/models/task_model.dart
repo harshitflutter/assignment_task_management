@@ -41,6 +41,9 @@ class TaskModel extends HiveObject {
   @HiveField(11)
   bool isDeleted;
 
+  @HiveField(12)
+  bool attachmentRemoved;
+
   TaskModel({
     required this.id,
     required this.title,
@@ -54,6 +57,7 @@ class TaskModel extends HiveObject {
     required this.userId,
     this.isSynced = false,
     this.isDeleted = false,
+    this.attachmentRemoved = false,
   });
 
   factory TaskModel.fromEntity(TaskEntity entity) {
@@ -70,6 +74,7 @@ class TaskModel extends HiveObject {
       userId: entity.userId,
       isSynced: entity.isSynced,
       isDeleted: entity.isDeleted,
+      attachmentRemoved: entity.attachmentRemoved,
     );
   }
 
@@ -87,6 +92,7 @@ class TaskModel extends HiveObject {
       userId: userId,
       isSynced: isSynced,
       isDeleted: isDeleted,
+      attachmentRemoved: attachmentRemoved,
     );
   }
 
@@ -104,6 +110,7 @@ class TaskModel extends HiveObject {
       'userId': userId,
       'isSynced': isSynced,
       'isDeleted': isDeleted,
+      'attachmentRemoved': attachmentRemoved,
     };
   }
 
@@ -124,6 +131,7 @@ class TaskModel extends HiveObject {
       userId: json['userId'],
       isSynced: json['isSynced'] ?? false,
       isDeleted: json['isDeleted'] ?? false,
+      attachmentRemoved: json['attachmentRemoved'] ?? false,
     );
   }
 
@@ -140,6 +148,7 @@ class TaskModel extends HiveObject {
     String? userId,
     bool? isSynced,
     bool? isDeleted,
+    bool? attachmentRemoved,
   }) {
     return TaskModel(
       id: id ?? this.id,
@@ -154,6 +163,7 @@ class TaskModel extends HiveObject {
       userId: userId ?? this.userId,
       isSynced: isSynced ?? this.isSynced,
       isDeleted: isDeleted ?? this.isDeleted,
+      attachmentRemoved: attachmentRemoved ?? this.attachmentRemoved,
     );
   }
 }

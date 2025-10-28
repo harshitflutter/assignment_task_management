@@ -45,9 +45,28 @@ class FileTypeUtils {
       }
     }
 
-    // Default to true for Firebase Storage URLs if we can't determine
-    // This ensures images are displayed even if URL doesn't contain clear indicators
-    return true;
+    // Check for non-image file extensions to explicitly exclude them
+    final nonImageExtensions = [
+      'pdf',
+      'doc',
+      'docx',
+      'xls',
+      'xlsx',
+      'ppt',
+      'pptx',
+      'txt',
+      'zip',
+      'rar'
+    ];
+    for (final ext in nonImageExtensions) {
+      if (url.contains('.$ext') || url.contains('_$ext')) {
+        return false;
+      }
+    }
+
+    // Default to false for Firebase Storage URLs if we can't determine
+    // This prevents non-image files from being treated as images
+    return false;
   }
 
   static bool isImageByAttachmentName(String? attachmentName) {

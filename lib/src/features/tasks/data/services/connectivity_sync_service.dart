@@ -40,16 +40,21 @@ class ConnectivitySyncService {
     final results = await _connectivity.checkConnectivity();
     _isOnline = results.isNotEmpty && results.first != ConnectivityResult.none;
 
-    // If we're already online on startup, sync tasks
-    if (_isOnline) {
-      _syncTasks();
-    }
+    // Don't auto-sync on startup - wait for tasks to be loaded first
+    // This prevents showing sync messages when there are no tasks
   }
 
   void _syncTasks() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       _taskCubit.syncTasks(user.uid);
+    }
+  }
+
+  // Method to trigger sync after tasks are loaded (called by TaskCubit)
+  void triggerSyncAfterTasksLoaded() {
+    if (_isOnline) {
+      _syncTasks();
     }
   }
 

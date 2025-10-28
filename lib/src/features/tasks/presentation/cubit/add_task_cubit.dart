@@ -46,6 +46,8 @@ class AddTaskInitial extends AddTaskState {}
 
 class AddTaskValidating extends AddTaskState {}
 
+class AddTaskLoading extends AddTaskState {}
+
 class AddTaskValid extends AddTaskState {
   final FormInitial formState;
   const AddTaskValid(this.formState);
@@ -107,6 +109,16 @@ class AddTaskCubit extends Cubit<AddTaskState> {
     } else {
       emit(AddTaskInvalid(formState, validationErrors));
     }
+  }
+
+  /// Emits loading state for update operations
+  void setLoading(FormInitial formState) {
+    emit(AddTaskCreating(formState));
+  }
+
+  /// Emits error state
+  void setError(String message) {
+    emit(AddTaskError(message));
   }
 
   /// Creates a task from the form data
